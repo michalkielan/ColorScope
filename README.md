@@ -15,5 +15,5 @@ $ sudo apt-get install python-opencv
 ## Usage
 
 ```
-$ PixelClicker.py image.jpeg
+$ ./PixelClicker.py image.jpeg
 ```
