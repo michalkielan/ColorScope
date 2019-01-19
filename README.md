@@ -1,4 +1,4 @@
-[![Travis CI](https://travis-ci.org/michalkielan/PixelClicker.svg?branch=master)](https://travis-ci.org/michalkielan/PixelClicker)
+[![Travis CI](https://travis-ci.org/michalkielan/ColorScope.svg?branch=master)](https://travis-ci.org/michalkielan/ColorScope)
 
 # ColorScope
 
