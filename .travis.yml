@@ -6,4 +6,4 @@ install:
   - pip install pylint opencv-python
 
 script:
-  - pylint --extension-pkg-whitelist=cv2 --disable=missing-docstring --disable=too-many-arguments --disable=unused-argument color_reader.py
+  - pylint --extension-pkg-whitelist=cv2 --disable=missing-docstring --disable=too-many-arguments --disable=unused-argument --disable=too-few-public-methods color_reader.py

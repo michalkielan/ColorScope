@@ -23,5 +23,5 @@ $ sudo pip install opencv-python
 Format supported: RGB, YUV
 
 ```
-$ ./color_reader.py -i image.jpeg -f format
+$ ./color_reader.py -i image.jpeg -f=RGB
 ```
