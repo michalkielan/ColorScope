@@ -2,7 +2,7 @@
 
 # ColorScope
 
-[[https://github.com/michalkielan/ColorScope/blob/master/res/logo.png|alt=logo]]
+![Logot](res/logo.png)
 
 Tool for debugging color issues.
 
