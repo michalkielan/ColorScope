@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.5
-"""Script to read the rgb color of each pixel"""
+"""Script to read the color data of each pixel"""
 
 import abc
 import argparse

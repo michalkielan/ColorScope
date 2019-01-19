@@ -1,8 +1,8 @@
 [![Travis CI](https://travis-ci.org/michalkielan/PixelClicker.svg?branch=master)](https://travis-ci.org/michalkielan/PixelClicker)
 
-# PixelClicker
+# ColorScope
 
-Tool for debugging color issues. Print the RGB value of each clicked pixel
+Tool for debugging color issues.
 
 ## Requirements 
 ```
@@ -21,5 +21,5 @@ $ sudo pip install opencv-python
 Format supported: RGB, YUV
 
 ```
-$ ./pixel_clicker.py -i image.jpeg -f format
+$ ./color_reader.py -i image.jpeg -f format
 ```
