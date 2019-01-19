@@ -2,6 +2,8 @@
 
 # ColorScope
 
+[[https://github.com/michalkielan/ColorScope/blob/master/res/logo.png|alt=logo]]
+
 Tool for debugging color issues.
 
 ## Requirements 
