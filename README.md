@@ -4,7 +4,7 @@
 
 ![Logot](res/logo.png)
 
-Tool for debugging color issues.
+Tool for analyze the image quality
 
 ## Requirements 
 ```
