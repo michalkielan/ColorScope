@@ -1,7 +1,5 @@
-[![Travis CI](https://travis-ci.org/michalkielan/ColorScope.svg?branch=master)](https://travis-ci.org/michalkielan/ColorScope)
-
-# ColorScope
-
+# ColorScope [![Travis CI](https://travis-ci.org/michalkielan/ColorScope.svg?branch=master)](https://travis-ci.org/michalkielan/ColorScope)
+ 
 ![Logot](res/logo.png)
 
 Tool for analyze the image quality
