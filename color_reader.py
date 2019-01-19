@@ -25,12 +25,15 @@ class ColorReader(metaclass=abc.ABCMeta):
 
   def processing(self):
     cv2.imshow(self.filename, self.img)
-
     cv2.setMouseCallback(self.filename, self.on_mouse_event)
-    pressedkey = cv2.waitKey(0)
-
-    if pressedkey == 27:
-      cv2.destroyAllWindows()
+    while True:
+      pressedkey = cv2.waitKey(100)
+      if pressedkey == 27:
+        cv2.destroyAllWindows()
+        break
+      if cv2.getWindowProperty(self.filename, cv2.WND_PROP_VISIBLE) < 1:
+        break
+    cv2.destroyAllWindows()
 
 
 class ColorReaderRGB(ColorReader):
