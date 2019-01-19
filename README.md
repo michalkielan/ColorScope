@@ -5,17 +5,21 @@
 Tool for debugging color issues. Print the RGB value of each clicked pixel
 
 ## Requirements 
+```
 python-opencv
+```
 
 ### Linux
 
 #### Debian/Ubuntu
 ```
 $ sudo apt-get install python-opencv
+$ sudo pip install opencv-python
 ```
 
 ## Usage
+Format supported: RGB, YUV
 
 ```
-$ ./PixelClicker.py image.jpeg
+$ ./pixel_clicker.py -i image.jpeg -f format
 ```
