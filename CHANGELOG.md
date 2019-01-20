@@ -3,8 +3,8 @@ Change Log
 
 ### Added
  - show rgb values of pixel
- - add yuv
- - add test
+ - yuv support
+ - test framework
 
 ### Changed
  - arg parser
