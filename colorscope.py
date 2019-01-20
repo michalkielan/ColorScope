@@ -21,6 +21,7 @@ class ColorReader(metaclass=abc.ABCMeta):
     self._read_colors(pos)
 
   def __on_mouse_event(self, event, pos_x, pos_y, flags, param):
+    del flags, param
     if event == cv2.EVENT_LBUTTONDOWN:
       self.__mouse_event_processing((pos_x, pos_y))
 
