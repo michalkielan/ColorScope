@@ -64,6 +64,7 @@ class ColorReaderYUV(ColorReader):
     val_y, val_u, val_v = color_yuv
     print(val_y, '\t', val_u, '\t', val_v)
 
+
 def make_color_reader(color_format, img_file):
   if color_format == 'rgb':
     return ColorReaderRGB(img_file)
