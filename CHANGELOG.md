@@ -6,6 +6,7 @@ ChangeLog
  - yuv support
  - test framework
  - coverage
+ - gui tests
 
 ### Changed
  - arg parser
