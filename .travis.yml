@@ -3,7 +3,8 @@ python:
   - "3.5"
 
 install:
-  - pip install pylint opencv-python
+  - pip install pylint opencv-python xvfbwrapper
 
 script:
-  - pylint --extension-pkg-whitelist=cv2 --disable=missing-docstring --disable=too-many-arguments --disable=unused-argument --disable=too-few-public-methods color_reader.py
+  - pylint --extension-pkg-whitelist=cv2 --disable=missing-docstring --disable=too-many-arguments --disable=unused-argument --disable=too-few-public-methods colorscope.py
+  - python -m unittest tst_colorscope.py
