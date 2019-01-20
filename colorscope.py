@@ -18,7 +18,8 @@ class ColorReader(metaclass=abc.ABCMeta):
     pass
 
   def __mouse_event_processing(self, pos):
-    self._read_colors(pos)
+    color = self._read_colors(pos)
+    print(color[0], '\t', color[1], '\t', color[2])
 
   def __on_mouse_event(self, event, pos_x, pos_y, flags, param):
     del flags, param
@@ -46,9 +47,8 @@ class ColorReaderRGB(ColorReader):
   def _read_colors(self, pos):
     super()._read_colors(pos)
     pos_x, pos_y = pos
-    color_rgb = self._img[pos_y, pos_x, :]
-    val_b, val_g, val_r = color_rgb
-    print(val_r, '\t', val_g, '\t', val_b)
+    b, g, r = self._img[pos_y, pos_x, :]
+    return r, g, b
 
 
 class ColorReaderYUV(ColorReader):
@@ -60,9 +60,7 @@ class ColorReaderYUV(ColorReader):
     super()._read_colors(pos)
     pos_x, pos_y = pos
     img_yuv = cv2.cvtColor(self._img, cv2.COLOR_BGR2YUV)
-    color_yuv = img_yuv[pos_y, pos_x, :]
-    val_y, val_u, val_v = color_yuv
-    print(val_y, '\t', val_u, '\t', val_v)
+    return img_yuv[pos_y, pos_x, :]
 
 
 def make_color_reader(color_format, img_file):

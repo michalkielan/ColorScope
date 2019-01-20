@@ -3,11 +3,10 @@ python:
   - "3.5"
 
 install:
-  - pip install pylint opencv-python xvfbwrapper pytest-cov coveralls
+  - pip install pylint opencv-python xvfbwrapper pytest-cov coveralls pillow
 
 script:
   - pylint colorscope.py
-  - python -m unittest tst_colorscope.py
   - pytest --cov colorscope tst_colorscope.py
 
 after_success:
