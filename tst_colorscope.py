@@ -163,5 +163,6 @@ class TestColorscope(unittest.TestCase):
      self.assertNotEqual(0, os.system('python colorscope.py --imgfile red.png --format=invalid'))
      self.assertNotEqual(0, os.system('python colorscope.py --imgfile '))
 
+
 if __name__ == '__main__':
   unittest.main()
