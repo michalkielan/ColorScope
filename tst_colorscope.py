@@ -1,8 +1,31 @@
 import unittest
 import colorscope
+import threading
 import os
+
+from time import sleep
+from pykeyboard import PyKeyboard
+from pymouse import PyMouse
 from PIL import Image, ImageDraw
 from xvfbwrapper import Xvfb
+
+
+class FakeKeyboard:
+  def __init__(self):
+    self.__keyboard = PyKeyboard()
+  def tap(self, key_code):
+    self.__keyboard.tap_key(key_code)
+  def tap_esc(self):
+    self.tap(9)
+
+
+class FakeMouse:
+  def __init__(self):
+    self.__mouse = PyMouse()
+  def click(self, x, y):
+    self.__mouse.move(x, y)
+    self.__mouse.click(x, y)
+
 
 class Resources:
   def __init__(self):
@@ -57,8 +80,6 @@ class TestColorscope(unittest.TestCase):
 
     with self.assertRaises(AttributeError):
       colorscope.make_color_reader('', '')
-
-    with self.assertRaises(AttributeError):
       colorscope.make_color_reader('invalid', '')
 
   def test_colorscope_instances(self):
@@ -113,6 +134,34 @@ class TestColorscope(unittest.TestCase):
      self.assertEqual([r, g, b] , [0, 0, 0])
      self.assertEqual([y, u, v] , [0, 128, 128])
 
+  def close_window(self):
+    fake_mouse = FakeMouse()
+    fake_keyboard = FakeKeyboard()
+    start_pos = [50, 50]
+    timeout = 3
+    x, y = start_pos
+    
+    sleep(timeout)
+    fake_mouse.click(x, y)
+    fake_keyboard.tap_esc()
+
+  def test_gui_open_close(self):
+    closer = threading.Thread(target=self.close_window)
+    closer.start()
+    csRGB = colorscope.ColorReaderRGB(self.res.red)
+    csRGB.processing()
+    closer.join()
+
+  def test_main(self):
+     self.assertEqual(0, os.system('python colorscope.py -h'))
+     self.assertNotEqual(0, os.system('python colorscope.py -i invalid.png'))
+     self.assertNotEqual(0, os.system('python colorscope.py -i red.png -f=invalid'))
+     self.assertNotEqual(0, os.system('python colorscope.py -i '))
+
+     self.assertEqual(0, os.system('python colorscope.py --help'))
+     self.assertNotEqual(0, os.system('python colorscope.py --imgfile invalid.png'))
+     self.assertNotEqual(0, os.system('python colorscope.py --imgfile red.png --format=invalid'))
+     self.assertNotEqual(0, os.system('python colorscope.py --imgfile '))
 
 if __name__ == '__main__':
   unittest.main()

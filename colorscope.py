@@ -80,15 +80,14 @@ def main():
   img_file = args.imgfile
 
   if not os.path.exists(img_file):
-    print('File not found')
-    sys.exit(1)
+    sys.exit('File not found')
 
   try:
     color_reader = make_color_reader(img_format, img_file)
     color_reader.processing()
   except AttributeError:
     err = sys.exc_info()[1]
-    print('Cannot read color: ', err)
+    sys.exit('Cannot read color: ' + str(err))
 
 if __name__ == '__main__':
   main()
