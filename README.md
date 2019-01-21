@@ -1,4 +1,5 @@
-# ColorScope [![Travis CI](https://travis-ci.org/michalkielan/ColorScope.svg?branch=master)](https://travis-ci.org/michalkielan/ColorScope) [![Coverage Status](https://coveralls.io/repos/github/michalkielan/ColorScope/badge.svg?branch=master)](https://coveralls.io/github/michalkielan/ColorScope?branch=master)
+# ColorScope [![Travis CI](https://travis-ci.org/michalkielan/ColorScope.svg?branch=master)](https://travis-ci.org/michalkielan/ColorScope) [![Coverage Status](http://coveralls.io/repos/github/michalkielan/ColorScope/badge.svg?branch=master&service=github)](https://coveralls.io/github/michalkielan/ColorScope?branch=master)
+
 
 ![Logo](res/logo.png)
 
