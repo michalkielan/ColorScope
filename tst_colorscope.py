@@ -2,6 +2,7 @@ import unittest
 import colorscope
 import threading
 import os
+import cv2
 
 from time import sleep
 from pykeyboard import PyKeyboard
@@ -30,6 +31,7 @@ class FakeMouse:
 class Resources:
   def __init__(self):
     size = (10, 10)
+    self.rect = [[1,1],[5,5]]
     
     self.red = 'red.png'
     self.green = 'green.png'
@@ -58,13 +60,13 @@ class Resources:
 
 
 class ColorReaderRgbMock(colorscope.ColorReaderRGB):
-  def read_colors(self, pos):
-    return self._read_colors(pos)
+  def read_rect_color(self, rect):
+    return super().read_rect_color(rect)
 
 
 class ColorReaderYuvMock(colorscope.ColorReaderYUV):
-  def read_colors(self, pos):
-    return self._read_colors(pos)
+  def read_rect_color(self, pos):
+    return super().read_rect_color(pos)
 
 
 class TestColorscope(unittest.TestCase):
@@ -89,50 +91,125 @@ class TestColorscope(unittest.TestCase):
     with self.assertRaises(TypeError):
       csINV = colorscope.ColorReader(self.res.red)
 
-  def test_color_red(self):
+  def test_color_rgb_red(self):
      img_file = self.res.red
      cr_rgb = ColorReaderRgbMock(img_file)
-     cr_yuv = ColorReaderYuvMock(img_file)
-     r, g, b = cr_rgb.read_colors((5,5))
-     y, u, v = cr_yuv.read_colors((5,5))
-     self.assertEqual([r, g, b] , [255, 0, 0])
-     self.assertEqual([y, u, v] , [76, 91, 255])
+     rgb = cr_rgb.read_rect_color(self.res.rect)
+     self.assertEqual(rgb , [255, 0, 0])
+  
+  def test_color_yuv_red(self):
+    img_file = self.res.red
+    cr_yuv = ColorReaderYuvMock(img_file)
+    yuv = cr_yuv.read_rect_color(self.res.rect)
+    self.assertEqual(yuv, [76, 91, 255])
+  
+  def test_color_filter_median_red(self):
+    img_file = self.res.red
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.median()
+    self.assertEqual([b, g, r] , [255, 0, 0])
 
-  def test_color_green(self):
+  def test_color_filter_average_red(self):
+    img_file = self.res.red
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.average()
+    self.assertEqual([b, g, r] , [255, 0, 0])
+
+  def test_color_rgb_green(self):
      img_file = self.res.green
      cr_rgb = ColorReaderRgbMock(img_file)
-     cr_yuv = ColorReaderYuvMock(img_file)
-     r, g, b = cr_rgb.read_colors((5,5))
-     y, u, v = cr_yuv.read_colors((5,5))
-     self.assertEqual([r, g, b] , [0, 255, 0])
-     self.assertEqual([y, u, v] , [150, 54, 0])
+     rgb = cr_rgb.read_rect_color(self.res.rect)
+     self.assertEqual(rgb , [0, 255, 0])
+  
+  def test_color_yuv_green(self):
+    img_file = self.res.green
+    cr_yuv = ColorReaderYuvMock(img_file)
+    yuv = cr_yuv.read_rect_color(self.res.rect)
+    self.assertEqual(yuv, [150, 54, 0])
+  
+  def test_color_filter_median_green(self):
+    img_file = self.res.green
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.median()
+    self.assertEqual([b, g, r] , [0, 255, 0])
 
-  def test_color_blue(self):
+  def test_color_filter_average_green(self):
+    img_file = self.res.green
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.average()
+    self.assertEqual([b, g, r] , [0, 255, 0])
+
+  def test_color_rgb_blue(self):
      img_file = self.res.blue
      cr_rgb = ColorReaderRgbMock(img_file)
-     cr_yuv = ColorReaderYuvMock(img_file)
-     r, g, b = cr_rgb.read_colors((5,5))
-     y, u, v = cr_yuv.read_colors((5,5))
-     self.assertEqual([r, g, b] , [0, 0, 255])
-     self.assertEqual([y, u, v] , [29, 239, 103])
+     rgb = cr_rgb.read_rect_color(self.res.rect)
+     self.assertEqual(rgb , [0, 0, 255])
+  
+  def test_color_yuv_blue(self):
+    img_file = self.res.blue
+    cr_yuv = ColorReaderYuvMock(img_file)
+    yuv = cr_yuv.read_rect_color(self.res.rect)
+    self.assertEqual(yuv, [29, 239, 103])
+  
+  def test_color_filter_median_blue(self):
+    img_file = self.res.blue
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.median()
+    self.assertEqual([b, g, r] , [0, 0, 255])
 
-  def test_color_white(self):
-     img_file = self.res.white
-     cr_rgb = ColorReaderRgbMock(img_file)
-     cr_yuv = ColorReaderYuvMock(img_file)
-     r, g, b = cr_rgb.read_colors((5,5))
-     y, u, v = cr_yuv.read_colors((5,5))
-     self.assertEqual([r, g, b] , [255, 255, 255])
-     self.assertEqual([y, u, v] , [255, 128, 128])
+  def test_color_filter_average_blue(self):
+    img_file = self.res.blue
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.average()
+    self.assertEqual([b, g, r] , [0, 0, 255])
 
-  def test_color_black(self):
+  def test_color_rgb_black(self):
      img_file = self.res.black
      cr_rgb = ColorReaderRgbMock(img_file)
-     cr_yuv = ColorReaderYuvMock(img_file)
-     r, g, b = cr_rgb.read_colors((5,5))
-     y, u, v = cr_yuv.read_colors((5,5))
-     self.assertEqual([r, g, b] , [0, 0, 0])
-     self.assertEqual([y, u, v] , [0, 128, 128])
+     rgb = cr_rgb.read_rect_color(self.res.rect)
+     self.assertEqual(rgb , [0, 0, 0])
+  
+  def test_color_yuv_black(self):
+    img_file = self.res.black
+    cr_yuv = ColorReaderYuvMock(img_file)
+    yuv = cr_yuv.read_rect_color(self.res.rect)
+    self.assertEqual(yuv, [0, 128, 128])
+  
+  def test_color_filter_median_black(self):
+    img_file = self.res.black
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.median()
+    self.assertEqual([b, g, r] , [0, 0, 0])
+
+  def test_color_filter_average_black(self):
+    img_file = self.res.black
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.average()
+    self.assertEqual([b, g, r] , [0, 0, 0])
+
+  def test_color_rgb_white(self):
+     img_file = self.res.white
+     cr_rgb = ColorReaderRgbMock(img_file)
+     rgb = cr_rgb.read_rect_color(self.res.rect)
+     self.assertEqual(rgb , [255, 255, 255])
+  
+  def test_color_yuv_white(self):
+    img_file = self.res.white
+    cr_yuv = ColorReaderYuvMock(img_file)
+    yuv = cr_yuv.read_rect_color(self.res.rect)
+    self.assertEqual(yuv, [255, 128, 128])
+  
+  def test_color_filter_median_white(self):
+    img_file = self.res.white
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.median()
+    self.assertEqual([b, g, r] , [255, 255, 255])
+
+  def test_color_filter_average_white(self):
+    img_file = self.res.white
+    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
+    r, g, b = color_filter.average()
+    self.assertEqual([b, g, r] , [255, 255, 255])
 
   def close_window(self):
     fake_mouse = FakeMouse()

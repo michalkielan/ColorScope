@@ -7,6 +7,8 @@ ChangeLog
  - test framework
  - coverage
  - gui tests
+ - roi instead of single pixel
 
 ### Changed
  - arg parser
+ - color of pixel to [average|median] color of roi
