@@ -102,7 +102,7 @@ class ColorReader(metaclass=abc.ABCMeta):
       self.__rect[1] = [x, y]
       if self.__rect[0] != self.__rect[1]:
         color = self.read_rect_color(self.__rect)
-        print(color[0], color[1], color[2], sep = '\t')
+        print(color[0], color[1], color[2], sep='\t')
 
   def processing(self):
     cv2.imshow(self.__window, self._img)
