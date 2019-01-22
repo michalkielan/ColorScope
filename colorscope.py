@@ -104,7 +104,6 @@ class ColorReader(metaclass=abc.ABCMeta):
         color = self.read_rect_color(self.__rect)
         print(color[0], '\t', color[1], '\t', color[2])
 
-
   def processing(self):
     cv2.imshow(self.__window, self._img)
     cv2.setMouseCallback(self.__window, self.__on_mouse_event)
@@ -125,6 +124,7 @@ class ColorReaderRGB(ColorReader):
 
   def _get_color_format(self, img_roi):
     return cv2.cvtColor(img_roi, cv2.COLOR_BGR2RGB)
+
 
 class ColorReaderYUV(ColorReader):
   def __init__(self, filename):
@@ -160,6 +160,7 @@ def main():
   except AttributeError:
     err = sys.exc_info()[1]
     sys.exit('Cannot read color: ' + str(err))
+
 
 if __name__ == '__main__':
   main()
