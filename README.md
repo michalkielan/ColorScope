@@ -5,22 +5,25 @@
 
 Tool for analyze the image quality
 
-## Requirements 
-```
-python-opencv
-```
+## Requirements
+* python-opencv
 
-### Linux
-
-#### Debian/Ubuntu
 ```
-$ sudo apt-get install python-opencv
 $ sudo pip install opencv-python
 ```
 
 ## Usage
-Format supported: RGB, YUV
+Output format supported: rgb, yuv
 
 ```
-$ ./colorscope.py -i image.jpeg -f=RGB
+$ ./colorscope.py -i image.jpeg -out_fmt=rgb
+R   G   B
+23  24  232
+255 255 255
+...
+```
+
+Raw input images
+```
+$ ./colorscope.py -i image.yuv -pix_fmt=nv21 -s 640x480 -out_fmt=rgb
 ```

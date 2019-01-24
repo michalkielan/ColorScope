@@ -43,19 +43,32 @@ class Resources:
   def __init__(self):
     size = (10, 10)
     self.rect = [[1,1],[5,5]]
+
+    if not is_windows():
+      os.system('ffmpeg -f rawvideo -video_size 1280x720 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1280_720.yuv')
+      os.system('ffmpeg -f rawvideo -video_size 1280x720 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1280_720.yuv')
+
+      os.system('ffmpeg -f rawvideo -video_size 1920x1080 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1920_1080.yuv')
+      os.system('ffmpeg -f rawvideo -video_size 1920x1080 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1920_1080.yuv')
     
+      self.raw_nv12_1920_1080 = 'raw_nv12_1920_1080.yuv'
+      self.raw_nv21_1920_1080 = 'raw_nv21_1920_1080.yuv'
+    
+      self.raw_nv12_1280_720 = 'raw_nv12_1280_720.yuv'
+      self.raw_nv21_1280_720 = 'raw_nv21_1280_720.yuv'
+
     self.red = 'red.png'
     self.green = 'green.png'
     self.blue = 'blue.png'
     self.black = 'black.png'
     self.white = 'white.png'
-    
+
     img_red = Image.new('RGB', size, (255, 0 ,0 ))
     img_green = Image.new('RGB', size, (0, 255, 0))
     img_blue = Image.new('RGB', size, (0, 0, 255))
     img_black = Image.new('RGB', size, (0, 0 ,0))
     img_white = Image.new('RGB', size, (255, 255, 255))
-    
+
     img_red.save(self.red)
     img_green.save(self.green)
     img_blue.save(self.blue)
@@ -90,29 +103,99 @@ class TestColorscope(unittest.TestCase):
     self.res = Resources()
 
   def test_factory_create(self):
-    colorscope.make_color_reader('rgb', self.res.red)
-    colorscope.make_color_reader('yuv', self.res.green)
+    imloader = colorscope.ImageDefaultLoader(self.res.red)
+    colorscope.make_color_reader('rgb', imloader)
+    colorscope.make_color_reader('yuv', imloader)
 
     with self.assertRaises(AttributeError):
       colorscope.make_color_reader('', '')
       colorscope.make_color_reader('invalid', '')
 
   def test_colorscope_instances(self):
-    csRGB = colorscope.ColorReaderRGB(self.res.red)
-    csYUV = colorscope.ColorReaderYUV(self.res.green)
+    imloader = colorscope.ImageDefaultLoader(self.res.red)
+    csRGB = colorscope.ColorReaderRGB(imloader)
+    csYUV = colorscope.ColorReaderYUV(imloader)
 
     with self.assertRaises(TypeError):
-      csINV = colorscope.ColorReader(self.res.red)
+      csINV = colorscope.ColorReader(imloader)
+
+  def test_image_loader_factory_nv12(self):
+    if not is_windows():
+      imloader = colorscope.image_loader_factory(self.res.raw_nv12_1920_1080, 'nv12', [1920, 1080])
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_image_loader_factory_nv21(self):
+    if not is_windows():
+      imloader = colorscope.image_loader_factory(self.res.raw_nv21_1920_1080, 'nv21', [1920, 1080])
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_image_loader_factory_default(self):
+    if not is_windows():
+      imloader = colorscope.image_loader_factory(self.res.red)
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([10, 10], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_image_loader_factory_failed(self):
+    with self.assertRaises(AttributeError):
+      imloader = colorscope.image_loader_factory('', 'invalid', [1280, 720])
+
+  def test_image_loader_factory_wrong_size(self):
+    if not is_windows():
+      with self.assertRaises(ValueError):
+        imloader = colorscope.image_loader_factory(self.res.raw_nv21_1920_1080, 'nv21', [2000, 2000])
+        colorscope.make_color_reader('rgb', imloader)
+
+  def test_image_loader_nv12_1080p(self):
+    if not is_windows():
+      imloader = colorscope.ImageLoaderRawNV12(self.res.raw_nv12_1920_1080, [1920, 1080])
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_image_loader_nv12_720p(self):
+    if not is_windows():
+      imloader = colorscope.ImageLoaderRawNV12(self.res.raw_nv12_1280_720, [1280, 720])
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([720, 1280], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_image_loader_nv21_1080p(self):
+    if not is_windows():
+      imloader = colorscope.ImageLoaderRawNV21(self.res.raw_nv21_1920_1080, [1920, 1080])
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_image_loader_nv21_720p(self):
+    if not is_windows():
+      imloader = colorscope.ImageLoaderRawNV21(self.res.raw_nv21_1280_720, [1280, 720])
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([720, 1280], [h, w])
+      self.assertEqual(3, channels)
 
   def test_color_rgb_red(self):
-     img_file = self.res.red
-     cr_rgb = ColorReaderRgbMock(img_file)
-     rgb = cr_rgb.read_rect_color(self.res.rect)
-     self.assertEqual(rgb , [255, 0, 0])
+    img_file = self.res.red
+    img_loader = colorscope.ImageDefaultLoader(img_file)
+    cr_rgb = ColorReaderRgbMock(img_loader)
+    rgb = cr_rgb.read_rect_color(self.res.rect)
+    self.assertEqual(rgb , [255, 0, 0])
   
   def test_color_yuv_red(self):
     img_file = self.res.red
-    cr_yuv = ColorReaderYuvMock(img_file)
+    img_loader = colorscope.ImageDefaultLoader(img_file)
+    cr_yuv = ColorReaderYuvMock(img_loader)
     yuv = cr_yuv.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [76, 91, 255])
   
@@ -130,13 +213,15 @@ class TestColorscope(unittest.TestCase):
 
   def test_color_rgb_green(self):
      img_file = self.res.green
-     cr_rgb = ColorReaderRgbMock(img_file)
+     img_loader = colorscope.ImageDefaultLoader(img_file)
+     cr_rgb = ColorReaderRgbMock(img_loader)
      rgb = cr_rgb.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [0, 255, 0])
   
   def test_color_yuv_green(self):
     img_file = self.res.green
-    cr_yuv = ColorReaderYuvMock(img_file)
+    img_loader = colorscope.ImageDefaultLoader(img_file)
+    cr_yuv = ColorReaderYuvMock(img_loader)
     yuv = cr_yuv.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [150, 54, 0])
   
@@ -154,13 +239,15 @@ class TestColorscope(unittest.TestCase):
 
   def test_color_rgb_blue(self):
      img_file = self.res.blue
-     cr_rgb = ColorReaderRgbMock(img_file)
+     img_loader = colorscope.ImageDefaultLoader(img_file)
+     cr_rgb = ColorReaderRgbMock(img_loader)
      rgb = cr_rgb.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [0, 0, 255])
   
   def test_color_yuv_blue(self):
     img_file = self.res.blue
-    cr_yuv = ColorReaderYuvMock(img_file)
+    img_loader = colorscope.ImageDefaultLoader(img_file)
+    cr_yuv = ColorReaderYuvMock(img_loader)
     yuv = cr_yuv.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [29, 239, 103])
   
@@ -178,13 +265,15 @@ class TestColorscope(unittest.TestCase):
 
   def test_color_rgb_black(self):
      img_file = self.res.black
-     cr_rgb = ColorReaderRgbMock(img_file)
+     img_loader = colorscope.ImageDefaultLoader(img_file)
+     cr_rgb = ColorReaderRgbMock(img_loader)
      rgb = cr_rgb.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [0, 0, 0])
   
   def test_color_yuv_black(self):
     img_file = self.res.black
-    cr_yuv = ColorReaderYuvMock(img_file)
+    img_loader = colorscope.ImageDefaultLoader(img_file)
+    cr_yuv = ColorReaderYuvMock(img_loader)
     yuv = cr_yuv.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [0, 128, 128])
   
@@ -202,13 +291,15 @@ class TestColorscope(unittest.TestCase):
 
   def test_color_rgb_white(self):
      img_file = self.res.white
-     cr_rgb = ColorReaderRgbMock(img_file)
+     img_loader = colorscope.ImageDefaultLoader(img_file)
+     cr_rgb = ColorReaderRgbMock(img_loader)
      rgb = cr_rgb.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [255, 255, 255])
   
   def test_color_yuv_white(self):
     img_file = self.res.white
-    cr_yuv = ColorReaderYuvMock(img_file)
+    img_loader = colorscope.ImageDefaultLoader(img_file)
+    cr_yuv = ColorReaderYuvMock(img_loader)
     yuv = cr_yuv.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [255, 128, 128])
   
@@ -240,7 +331,8 @@ class TestColorscope(unittest.TestCase):
     if fake_xwindow_supported():
       closer = threading.Thread(target=self.close_window)
       closer.start()
-      csRGB = colorscope.ColorReaderRGB(self.res.red)
+      image_loader = colorscope.ImageDefaultLoader(self.res.red)
+      csRGB = colorscope.ColorReaderRGB(image_loader)
       csRGB.processing()
       closer.join()
 
@@ -252,12 +344,12 @@ class TestColorscope(unittest.TestCase):
       exe = 'python '
     self.assertEqual(0, os.system(exe + ' colorscope.py -h'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py -i invalid.png'))
-    self.assertNotEqual(0, os.system(exe + ' colorscope.py -i red.png -f=invalid'))
+    self.assertNotEqual(0, os.system(exe + ' colorscope.py -i red.png -out_fmt=invalid'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py -i '))
 
     self.assertEqual(0, os.system(exe + ' colorscope.py --help'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py --imgfile invalid.png'))
-    self.assertNotEqual(0, os.system(exe + ' colorscope.py --imgfile red.png --format=invalid'))
+    self.assertNotEqual(0, os.system(exe + ' colorscope.py --imgfile red.png --output_format=invalid'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py --imgfile '))
 
 

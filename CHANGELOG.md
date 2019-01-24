@@ -8,7 +8,9 @@ ChangeLog
  - coverage
  - gui tests
  - roi instead of single pixel
+ - raw input yuv image support
 
 ### Changed
  - arg parser
  - color of pixel to [average|median] color of roi
+ - arg parser (added cmd for raw image input)

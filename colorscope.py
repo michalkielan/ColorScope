@@ -5,7 +5,7 @@ import abc
 import argparse
 import sys
 import os
-import numpy
+import numpy as np
 import cv2
 
 
@@ -27,13 +27,13 @@ class ColorChannelFilter:
   def median(self):
     channel_filtered = []
     for channel_val in self.__channel_data:
-      channel_filtered.append(int(numpy.median(channel_val)))
+      channel_filtered.append(int(np.median(channel_val)))
     return channel_filtered
 
   def average(self):
     channel_filtered = []
     for channel_val in self.__channel_data:
-      channel_filtered.append(int(numpy.average(channel_val)))
+      channel_filtered.append(int(np.average(channel_val)))
     return channel_filtered
 
 
@@ -62,12 +62,62 @@ class MouseRectDrawer:
     cv2.imshow(self.__window, self.__img)
 
 
-class ColorReader(metaclass=abc.ABCMeta):
+class ImageLoader(metaclass=abc.ABCMeta):
+  @abc.abstractmethod
+  def imread(self):
+    pass
+
+
+class ImageDefaultLoader(ImageLoader):
   def __init__(self, filename):
-    rect_color = (0, 0, 255)
     self.__filename = filename
-    self.__window = self.__filename
-    self._img = cv2.imread(self.__filename)
+
+  def imread(self):
+    return cv2.imread(self.__filename)
+
+
+class ImageLoaderRawNV21(ImageLoader):
+  def __init__(self, filename, size):
+    width, height = size
+    self.__frame_len = width * height * 3 / 2
+    self.__img_file = open(filename, 'rb')
+    self.__shape = (int(height * 1.5), width)
+
+  def _read_raw(self):
+    raw = self.__img_file.read(int(self.__frame_len))
+    buf = np.frombuffer(raw, dtype=np.uint8)
+    raw_img = buf.reshape(self.__shape)
+    return raw_img
+
+  def imread(self):
+    raw_img = self._read_raw()
+    return cv2.cvtColor(raw_img, cv2.COLOR_YUV2BGR_NV21)
+
+
+class ImageLoaderRawNV12(ImageLoaderRawNV21):
+  def imread(self):
+    raw_img = self._read_raw()
+    return cv2.cvtColor(raw_img, cv2.COLOR_YUV2BGR_NV12)
+
+
+def image_loader_factory(img_filename, pixel_format='', size=None):
+  if pixel_format == 'nv21':
+    return ImageLoaderRawNV21(img_filename, size)
+  if pixel_format == 'nv12':
+    return ImageLoaderRawNV12(img_filename, size)
+  if pixel_format == '':
+    return ImageDefaultLoader(img_filename)
+  raise AttributeError('image_loader_factory: ' + pixel_format + ' not found')
+
+
+class ColorReader(metaclass=abc.ABCMeta):
+  def __init__(self, image_loader):
+    rect_color = (0, 0, 255)
+    self.__window = 'ColorScope'
+    self._img = image_loader.imread()
+    if self._img is None:
+      raise AttributeError('ColorReader.__init__: image load failed')
+
     self._img_mark = self._img.copy()
     self.__mouse_drawer = MouseRectDrawer(self.__window, self._img, rect_color)
     self.__rect = [[0, 0], [0, 0]]
@@ -135,31 +185,68 @@ class ColorReaderYUV(ColorReader):
     return cv2.cvtColor(img_roi, cv2.COLOR_BGR2YUV)
 
 
-def make_color_reader(color_format, img_file):
+def make_color_reader(color_format, image_loader):
   if color_format == 'rgb':
-    return ColorReaderRGB(img_file)
+    return ColorReaderRGB(image_loader)
   if color_format == 'yuv':
-    return ColorReaderYUV(img_file)
-  raise AttributeError('Color format: ' + color_format + ' not found')
+    return ColorReaderYUV(image_loader)
+  raise AttributeError('make_color_reader: ' + color_format + ' not found')
+
+def parse_video_size_arg(video_size):
+  if video_size != '':
+    w, h = video_size.split('x', 1)
+    return int(w), int(h)
+  return None
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-i', '--imgfile', type=str, help='Image file', default='')
-  parser.add_argument('-f', '--format', type=str, help='RGB, YUV (Default: RGB)', default='RGB')
+  parser.add_argument(
+      '-i',
+      '--imgfile',
+      type=str,
+      help='Image file',
+      default=''
+  )
+
+  parser.add_argument(
+      '-pix_fmt',
+      '--pixel_format',
+      type=str, help='Raw input pixel format: nv21, nv12',
+      default=''
+  )
+
+  parser.add_argument(
+      '-s',
+      '--video_size',
+      type=str, help='WxH set the frame size',
+      default=''
+  )
+
+  parser.add_argument(
+      '-out_fmt',
+      '--output_format',
+      type=str,
+      help='Output rgb, yuv (Default: rgb)',
+      default='rgb'
+  )
 
   args = parser.parse_args()
-  img_format = args.format.lower()
+  pixel_format = args.pixel_format.lower()
+  output_format = args.output_format.lower()
+  video_size = parse_video_size_arg(args.video_size)
   img_file = args.imgfile
 
   if not os.path.exists(img_file):
     sys.exit('File not found')
 
+  image_loader = image_loader_factory(img_file, pixel_format, video_size)
+
   try:
-    color_reader = make_color_reader(img_format, img_file)
+    color_reader = make_color_reader(output_format, image_loader)
     color_reader.processing()
-  except AttributeError:
+  except (AttributeError, ValueError) as err:
     err = sys.exc_info()[1]
-    sys.exit('Cannot read color: ' + str(err))
+    sys.exit('Cannot read image: ' + str(err))
 
 
 if __name__ == '__main__':
