@@ -170,7 +170,7 @@ class ColorReader(metaclass=abc.ABCMeta):
 class ColorReaderRGB(ColorReader):
   def __init__(self, filename):
     super().__init__(filename)
-    print('R\tG\tB')
+    print('R', 'G', 'B', sep='\t')
 
   def _get_color_format(self, img_roi):
     return cv2.cvtColor(img_roi, cv2.COLOR_BGR2RGB)
@@ -179,7 +179,7 @@ class ColorReaderRGB(ColorReader):
 class ColorReaderYUV(ColorReader):
   def __init__(self, filename):
     super().__init__(filename)
-    print('Y\tU\tV')
+    print('Y', 'U', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
     return cv2.cvtColor(img_roi, cv2.COLOR_BGR2YUV)
