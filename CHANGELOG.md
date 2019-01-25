@@ -10,7 +10,7 @@ ChangeLog
  - roi instead of single pixel
  - raw input yuv image support
  - add arg for filtering type (avg, med)
- - add output hsv support
+ - add output hsv, hls support
 
 ### Changed
  - arg parser

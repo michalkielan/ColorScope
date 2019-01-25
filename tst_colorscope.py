@@ -99,6 +99,11 @@ class ColorReaderHsvMock(colorscope.ColorReaderHSV):
     return super().read_rect_color(pos)
 
 
+class ColorReaderHlsMock(colorscope.ColorReaderHLS):
+  def read_rect_color(self, pos):
+    return super().read_rect_color(pos)
+
+
 class TestColorscope(unittest.TestCase):
   def setUp(self):
     if fake_xwindow_supported():
@@ -112,6 +117,7 @@ class TestColorscope(unittest.TestCase):
     colorscope.ColorReader.create('rgb', imloader, 'avg')
     colorscope.ColorReader.create('yuv', imloader, 'avg')
     colorscope.ColorReader.create('hsv', imloader, 'avg')
+    colorscope.ColorReader.create('hls', imloader, 'avg')
 
     with self.assertRaises(AttributeError):
       colorscope.ColorReader.create('', '', '')
@@ -122,6 +128,7 @@ class TestColorscope(unittest.TestCase):
     csRGB = colorscope.ColorReaderRGB(imloader)
     csYUV = colorscope.ColorReaderYUV(imloader)
     csHSV = colorscope.ColorReaderHSV(imloader)
+    csHLS = colorscope.ColorReaderHLS(imloader)
 
     with self.assertRaises(TypeError):
       csINV = colorscope.ColorReader(imloader)
@@ -206,6 +213,13 @@ class TestColorscope(unittest.TestCase):
     hsv = cr.read_rect_color(self.res.rect)
     self.assertEqual(hsv , [0, 255, 255])
 
+  def test_color_hls_red(self):
+    img_file = self.res.red
+    img_loader = colorscope.ImageLoaderDefault(img_file)
+    cr = ColorReaderHlsMock(img_loader)
+    hls = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hls , [0, 128, 255])
+
   def test_color_yuv_red(self):
     img_file = self.res.red
     img_loader = colorscope.ImageLoaderDefault(img_file)
@@ -238,6 +252,13 @@ class TestColorscope(unittest.TestCase):
      cr = ColorReaderHsvMock(img_loader)
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv , [60, 255, 255])
+
+  def test_color_hls_green(self):
+     img_file = self.res.green
+     img_loader = colorscope.ImageLoaderDefault(img_file)
+     cr = ColorReaderHlsMock(img_loader)
+     hls = cr.read_rect_color(self.res.rect)
+     self.assertEqual(hls , [60, 128, 255])
 
   def test_color_yuv_green(self):
     img_file = self.res.green
@@ -272,6 +293,13 @@ class TestColorscope(unittest.TestCase):
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv , [120, 255, 255])
 
+  def test_color_hls_blue(self):
+     img_file = self.res.blue
+     img_loader = colorscope.ImageLoaderDefault(img_file)
+     cr = ColorReaderHlsMock(img_loader)
+     hls = cr.read_rect_color(self.res.rect)
+     self.assertEqual(hls, [120, 128, 255])
+
   def test_color_yuv_blue(self):
     img_file = self.res.blue
     img_loader = colorscope.ImageLoaderDefault(img_file)
@@ -305,6 +333,13 @@ class TestColorscope(unittest.TestCase):
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv , [0, 0, 0])
 
+  def test_color_hls_black(self):
+     img_file = self.res.black
+     img_loader = colorscope.ImageLoaderDefault(img_file)
+     cr = ColorReaderHlsMock(img_loader)
+     hls = cr.read_rect_color(self.res.rect)
+     self.assertEqual(hls , [0, 0, 0])
+
   def test_color_yuv_black(self):
     img_file = self.res.black
     img_loader = colorscope.ImageLoaderDefault(img_file)
@@ -337,6 +372,13 @@ class TestColorscope(unittest.TestCase):
      cr = ColorReaderHsvMock(img_loader)
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv, [0, 0, 255])
+
+  def test_color_hls_white(self):
+     img_file = self.res.white
+     img_loader = colorscope.ImageLoaderDefault(img_file)
+     cr = ColorReaderHlsMock(img_loader)
+     hls = cr.read_rect_color(self.res.rect)
+     self.assertEqual(hls, [0, 255, 0])
 
   def test_color_yuv_white(self):
     img_file = self.res.white

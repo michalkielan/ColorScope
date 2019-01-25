@@ -193,6 +193,8 @@ class ColorReader(metaclass=abc.ABCMeta):
       return ColorReaderYUV(image_loader, filter_type)
     if color_format == 'hsv':
       return ColorReaderHSV(image_loader, filter_type)
+    if color_format == 'hls':
+      return ColorReaderHLS(image_loader, filter_type)
     raise AttributeError('make_color_reader: ' + color_format + ' not found')
 
 
@@ -221,6 +223,15 @@ class ColorReaderHSV(ColorReader):
 
   def _get_color_format(self, img_roi):
     return cv2.cvtColor(img_roi, cv2.COLOR_BGR2HSV)
+
+
+class ColorReaderHLS(ColorReader):
+  def __init__(self, filename, filter_type='avg'):
+    super().__init__(filename, filter_type)
+    print('H', 'L', 'S', sep='\t')
+
+  def _get_color_format(self, img_roi):
+    return cv2.cvtColor(img_roi, cv2.COLOR_BGR2HLS)
 
 
 def parse_video_size_arg(video_size):
@@ -257,7 +268,7 @@ def main():
       '-out_fmt',
       '--output_format',
       type=str,
-      help='Output rgb, yuv, hsv (Default: rgb)',
+      help='Output rgb, yuv, hsv, hls (Default: rgb)',
       default='rgb'
   )
 
