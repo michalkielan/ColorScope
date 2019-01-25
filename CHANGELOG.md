@@ -9,6 +9,7 @@ ChangeLog
  - gui tests
  - roi instead of single pixel
  - raw input yuv image support
+ - add arg for filtering type (avg, med)
 
 ### Changed
  - arg parser

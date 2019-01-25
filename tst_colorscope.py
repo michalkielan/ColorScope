@@ -104,12 +104,12 @@ class TestColorscope(unittest.TestCase):
 
   def test_factory_color_read_create(self):
     imloader = colorscope.ImageLoaderDefault(self.res.red)
-    colorscope.ColorReader.create('rgb', imloader)
-    colorscope.ColorReader.create('yuv', imloader)
+    colorscope.ColorReader.create('rgb', imloader, 'avg')
+    colorscope.ColorReader.create('yuv', imloader, 'avg')
 
     with self.assertRaises(AttributeError):
-      colorscope.ColorReader.create('', '')
-      colorscope.ColorReader.create('invalid', '')
+      colorscope.ColorReader.create('', '', '')
+      colorscope.ColorReader.create('invalid', '', '')
 
   def test_colorscope_instances(self):
     imloader = colorscope.ImageLoaderDefault(self.res.red)
@@ -151,7 +151,7 @@ class TestColorscope(unittest.TestCase):
     if not is_windows():
       with self.assertRaises(ValueError):
         imloader = colorscope.ImageLoader.create(self.res.raw_nv21_1920_1080, 'nv21', [2000, 2000])
-        colorscope.ColorReader.create('rgb', imloader)
+        colorscope.ColorReader.create('rgb', imloader, '')
 
   def test_image_loader_nv12_1080p(self):
     if not is_windows():
@@ -201,14 +201,14 @@ class TestColorscope(unittest.TestCase):
   
   def test_color_filter_median_red(self):
     img_file = self.res.red
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.median()
+    color_filter = colorscope.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [255, 0, 0])
 
   def test_color_filter_average_red(self):
     img_file = self.res.red
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.average()
+    color_filter = colorscope.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [255, 0, 0])
 
   def test_color_rgb_green(self):
@@ -227,14 +227,14 @@ class TestColorscope(unittest.TestCase):
   
   def test_color_filter_median_green(self):
     img_file = self.res.green
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.median()
+    color_filter = colorscope.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [0, 255, 0])
 
   def test_color_filter_average_green(self):
     img_file = self.res.green
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.average()
+    color_filter = colorscope.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [0, 255, 0])
 
   def test_color_rgb_blue(self):
@@ -253,14 +253,14 @@ class TestColorscope(unittest.TestCase):
   
   def test_color_filter_median_blue(self):
     img_file = self.res.blue
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.median()
+    color_filter = colorscope.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [0, 0, 255])
 
   def test_color_filter_average_blue(self):
     img_file = self.res.blue
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.average()
+    color_filter = colorscope.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [0, 0, 255])
 
   def test_color_rgb_black(self):
@@ -279,14 +279,14 @@ class TestColorscope(unittest.TestCase):
   
   def test_color_filter_median_black(self):
     img_file = self.res.black
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.median()
+    color_filter = colorscope.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [0, 0, 0])
 
   def test_color_filter_average_black(self):
     img_file = self.res.black
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.average()
+    color_filter = colorscope.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [0, 0, 0])
 
   def test_color_rgb_white(self):
@@ -305,14 +305,14 @@ class TestColorscope(unittest.TestCase):
   
   def test_color_filter_median_white(self):
     img_file = self.res.white
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.median()
+    color_filter = colorscope.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [255, 255, 255])
 
   def test_color_filter_average_white(self):
     img_file = self.res.white
-    color_filter = colorscope.ColorChannelFilter(cv2.imread(img_file))
-    r, g, b = color_filter.average()
+    color_filter = colorscope.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [255, 255, 255])
 
   def close_window(self):
