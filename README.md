@@ -17,9 +17,9 @@ Output format supported: rgb, yuv
 
 ```
 $ ./colorscope.py -i image.jpeg -out_fmt=rgb
-R   G   B
-23  24  232
-255 255 255
+R      G      B
+23     24     232
+255    255    255
 ...
 ```
 
