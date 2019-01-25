@@ -13,7 +13,7 @@ $ sudo pip install opencv-python
 ```
 
 ## Usage
-Output format supported: rgb, yuv
+Output format supported: rgb, yuv, hsv
 
 ```
 $ ./colorscope.py -i image.jpeg -out_fmt=rgb
