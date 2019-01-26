@@ -5,8 +5,28 @@ import abc
 import argparse
 import sys
 import os
+import json
 import numpy as np
 import cv2
+
+
+class ColorJson(metaclass=abc.ABCMeta):
+  def append_val(self, channel_id, val):
+    channel = self.__color_data['format'][channel_id]
+    self.__color_data['channels'][channel].append(val)    
+
+  def write(self):
+    color_json = json.dumps(color_data)
+    with open(self.__filename, 'w') as outfile:
+      json.dump(self._color_data, outfile)
+
+
+class ColorJsonRGB(ColorJson):
+  def __init__(self, filename):
+    super.__init__(self, filename)
+    self._color_data = {
+        'format': 'rgb', 'channels': {'r': [], 'g': [], 'b': []}
+    }
 
 
 class ColorChannelFilter(metaclass=abc.ABCMeta):
@@ -240,6 +260,11 @@ def parse_video_size_arg(video_size):
     return int(w), int(h)
   return None
 
+
+#####test
+rgb_json = ColorJsonRGB('bbb.json')
+sys.exit(0)
+####test
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
