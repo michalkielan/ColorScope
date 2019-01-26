@@ -1,6 +1,49 @@
 import cv2
 import numpy as np
 
+def get_plot_scaler(): return 3
+
+ref = [ 
+[155,  46,   84],
+[173,  120,  106],
+[112,  101,  184],
+[56,   35,   101],
+[128,  113,  151],
+[87,   102,  187],
+[8,    128,  210],
+[117,  119,  216],
+[177,  117,  194],
+[136,  40,   191],
+[42,   108,  214],
+[14,   139,  230],
+[118,  99,   230],
+[67,   68,   204],
+[1,    104,  221],
+[24,   136,  245],
+[163,  122,  211],
+[105,  94,   242]
+]
+
+cap = [
+[154,  3,    136],
+[171,  115,  127],
+[113,  92,   209],
+[55,   25,   195],
+[130,  106,  187],
+[83,   110,  207],
+[7,    121,  235],
+[120,  111,  246],
+[175,  108,  244],
+[135,  24,   255],
+[43,   119,  241],
+[14,   136,  254],
+[120,  87,   255],
+[64,   70,   246],
+[0,    92,   255],
+[25,   136,  255],
+[161,  110,  255],
+[105,  85,   255]
+]
 def draw_circle(window, pos, bgr):
   circle_rad = 6
   cv2.circle(window, pos, circle_rad, bgr, -1)
@@ -15,74 +58,31 @@ def draw_rect(window, pos, bgr):
   cv2.circle(window, pos, circle_rad, (0, 0, 0), 1)
 
 def gen_hv_plane():
-  img = np.zeros((255, 255, 3), np.uint8)
-  h, w, channels = img.shape
-  img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-  for y in range(0, h):
-    for x in range(0, w):
+  img = np.zeros((180, 255, 3), np.uint8)
+  height, width, channels = img.shape
+  print(width, height)
+  img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+  for y in range(0, height):
+    for x in range(0, width):
       s = x
-      v = y
-      img_hsv[y, x] = [125, s, v]
+      h = y
+      img_hsv[y, x] = [h, 128, s]
   return img_hsv
 
-plane = gen_hv_plane()
-
-ref = [ 
-[155,	84,	46],
-[173,	106,	120],
-[112,	184,	101],
-[56,	101,	35],
-[128,	151,	113],
-[87,	187,	102],
-[8,	210,	128],
-[117,	216,	119],
-[177,	194,	117],
-[136,	191,	40],
-[42,	214,	108],
-[14,	230,	139],
-[118,	230,	99],
-[67,	204,	68],
-[1,	221,	104],
-[24,	245,	136],
-[163,	211,	122],
-[105,	242,	94]]
-
-cap = [
-[154,	136,	32],
-[171,	127,	115],
-[113,	209,	92],
-[55,	195,	25],
-[130,	187,	106],
-[83,	207,	110],
-[7,	235,	121],
-[120,	246,	111],
-[175,	244,	108],
-[135,	255,	24],
-[43,	241,	119],
-[14,	254,	136],
-[120,	255,	87],
-[64,	246,	70],
-[0,	255,	92],
-[25,	255,	136],
-[161,	255,	110],
-[105,	255,    85]]
-
-def draw_circles(plane, ref, cap):
+def draw_samples(plane, ref, cap):
   size = min(len(ref), len(cap))
   for i in range(0, size):
-    ref_s, ref_v = ref[i][1]*2, ref[i][2]*2
-    cap_s, cap_v = cap[i][1]*2, cap[i][2]*2
-    ref_pos = ref_s, ref_v
-    cap_pos = cap_s, cap_v
+    ref_h, ref_s = ref[i][0]*get_plot_scaler(), ref[i][2]*get_plot_scaler()
+    cap_h, cap_s = cap[i][0]*get_plot_scaler(), cap[i][2]*get_plot_scaler()
+    ref_pos = ref_s, ref_h
+    cap_pos = cap_s, cap_h
+    draw_line(plane, ref_pos, cap_pos, (0, 0, 0))
     draw_circle(plane, ref_pos, (0, 0, 0))
     draw_circle(plane, cap_pos, (0, 0, 244))
-    draw_line(plane, ref_pos, cap_pos, (0, 0, 0))
 
-big = cv2.resize(plane, (0,0), fx=2, fy=2)
-
-draw_circles(big, ref, cap)
-
-
+plane = gen_hv_plane()
+big = cv2.resize(plane, (0,0), fx=get_plot_scaler(), fy=get_plot_scaler())
+draw_samples(big, ref, cap)
 math_axis_img = cv2.flip(big, 0)
 cv2.imshow('window', math_axis_img)
 
