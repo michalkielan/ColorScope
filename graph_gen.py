@@ -44,6 +44,7 @@ cap = [
 [161,  110,  255],
 [105,  85,   255]
 ]
+
 def draw_circle(window, pos, bgr):
   circle_rad = 6
   cv2.circle(window, pos, circle_rad, bgr, -1)
