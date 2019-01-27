@@ -110,33 +110,32 @@ class ColorMeter:
         np.average(delta_s_perc_data)
     ]
 
-ref_color = ColorJsonParser('ref.json')
-cap_color = ColorJsonParser('cap.json')
+def main():
+  ref_json_filename = sys.argv[1]
+  cap_json_filename = sys.argv[2]
+  ref_color = ColorJsonParser(ref_json_filename)
+  cap_color = ColorJsonParser(ref_json_filename)
+  
+  color_meter = ColorMeter(ref_color, cap_color)
+  h_perc, l_perc, s_perc = color_meter.get_hls_delta_perc()
+  
+  print('\u0394H :', round(h_perc, 2), '%')
+  print('\u0394L :', round(l_perc, 2), '%')
+  print('\u0394S :', round(s_perc, 2), '%')
+  
+  window_name = 'window'
+  hs_plane = PlaneHS(ref_color, cap_color, 3)
+  img = hs_plane.get_plot()
+  cv2.imshow(window_name, img)
+  
+  while True:
+    pressedkey = cv2.waitKey(100)
+    if pressedkey == 27 or pressedkey == ord('q'):
+      cv2.destroyAllWindows()
+      break
+    if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+      break
+  cv2.destroyAllWindows()
 
-color_meter = ColorMeter(ref_color, cap_color)
-h_perc, l_perc, s_perc = color_meter.get_hls_delta_perc()
-
-print('\u0394H :', round(h_perc, 2), '%')
-print('\u0394L :', round(l_perc, 2), '%')
-print('\u0394S :', round(s_perc, 2), '%')
-
-window_name = 'window'
-hs_plane = PlaneHS(ref_color, cap_color, 3)
-img = hs_plane.get_plot()
-cv2.imshow(window_name, img)
-
-
-#plane = gen_hv_plane()
-#big = cv2.resize(plane, (0,0), fx=get_plot_scaler(), fy=get_plot_scaler())
-#draw_samples(big, ref, cap)
-#math_axis_img = cv2.flip(big, 0)
-#cv2.imshow('window', math_axis_img)
-
-while True:
-  pressedkey = cv2.waitKey(100)
-  if pressedkey == 27 or pressedkey == ord('q'):
-    cv2.destroyAllWindows()
-    break
-  if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
-    break
-cv2.destroyAllWindows()
+if __name__ == '__main__':
+  main()
