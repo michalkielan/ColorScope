@@ -18,19 +18,15 @@ class ColorJson(metaclass=abc.ABCMeta):
   def append(self, color):
     length = len(color)
     if length != len(self._color_data['format']):
-      raise ValueError('Channel number not match')
+      raise ValueError('Number of channels not match')
 
     for i in range(0, length):
       channel = self._color_data['format'][i]
       self._color_data['channels'][channel].append(color[i])
 
-  def __write(self):
+  def write(self):
     with open(self.__filename, 'w') as outfile:
       json.dump(self._color_data, outfile)
-
-  def __del__(self):
-    print('ColorJson.__del__')
-    self.__write()
 
 
 class ColorJsonRGB(ColorJson):
@@ -40,15 +36,6 @@ class ColorJsonRGB(ColorJson):
         'format': 'rgb', 'channels': {'r': [], 'g': [], 'b': []}
     }
 
-  def __del__(self):
-    super().__del__()
-
-
-testjson = ColorJsonRGB('yyyy.json') 
-## crash because i can not open file in the destructor
-## the python interpreter is closed before __del__
-sys.exit(0)
-########
 
 class ColorJsonYUV(ColorJson):
   def __init__(self, filename):
@@ -57,8 +44,6 @@ class ColorJsonYUV(ColorJson):
         'format': 'yuv', 'channels': {'y': [], 'u': [], 'v': []}
     }
 
-  def __del__(self):
-    super().__del__()
 
 class ColorJsonHSV(ColorJson):
   def __init__(self, filename):
@@ -66,9 +51,6 @@ class ColorJsonHSV(ColorJson):
     self._color_data = {
         'format': 'hsv', 'channels': {'h': [], 's': [], 'v': []}
     }
-
-  def __del__(self):
-    super().__del__()
 
 
 class ColorJsonHLS(ColorJson):
@@ -256,6 +238,7 @@ class ColorReader(metaclass=abc.ABCMeta):
       if cv2.getWindowProperty(self.__window, cv2.WND_PROP_VISIBLE) < 1:
         break
     cv2.destroyAllWindows()
+    self._color_json.write()
 
   @staticmethod
   def create(color_format, image_loader, filter_type, out_json_filename):
@@ -281,7 +264,7 @@ class ColorReaderRGB(ColorReader):
 
 
 class ColorReaderYUV(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
     self._color_json = ColorJsonYUV(json_filename)
     print('Y', 'U', 'V', sep='\t')
@@ -291,7 +274,7 @@ class ColorReaderYUV(ColorReader):
 
 
 class ColorReaderHSV(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
     self._color_json = ColorJsonHSV(json_filename)
     print('H', 'S', 'V', sep='\t')
@@ -301,7 +284,7 @@ class ColorReaderHSV(ColorReader):
 
 
 class ColorReaderHLS(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
     print('H', 'L', 'S', sep='\t')
 
