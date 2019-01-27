@@ -11,21 +11,71 @@ import cv2
 
 
 class ColorJson(metaclass=abc.ABCMeta):
-  def append_val(self, channel_id, val):
-    channel = self.__color_data['format'][channel_id]
-    self.__color_data['channels'][channel].append(val)    
+  def __init__(self, filename):
+    self.__filename = filename
+    self._color_data = {}
 
-  def write(self):
-    color_json = json.dumps(color_data)
+  def append(self, color):
+    length = len(color)
+    if length != len(self._color_data['format']):
+      raise ValueError('Channel number not match')
+
+    for i in range(0, length):
+      channel = self._color_data['format'][i]
+      self._color_data['channels'][channel].append(color[i])
+
+  def __write(self):
     with open(self.__filename, 'w') as outfile:
       json.dump(self._color_data, outfile)
+
+  def __del__(self):
+    print('ColorJson.__del__')
+    self.__write()
 
 
 class ColorJsonRGB(ColorJson):
   def __init__(self, filename):
-    super.__init__(self, filename)
+    super().__init__(filename)
     self._color_data = {
         'format': 'rgb', 'channels': {'r': [], 'g': [], 'b': []}
+    }
+
+  def __del__(self):
+    super().__del__()
+
+
+testjson = ColorJsonRGB('yyyy.json') 
+## crash because i can not open file in the destructor
+## the python interpreter is closed before __del__
+sys.exit(0)
+########
+
+class ColorJsonYUV(ColorJson):
+  def __init__(self, filename):
+    super().__init__(filename)
+    self._color_data = {
+        'format': 'yuv', 'channels': {'y': [], 'u': [], 'v': []}
+    }
+
+  def __del__(self):
+    super().__del__()
+
+class ColorJsonHSV(ColorJson):
+  def __init__(self, filename):
+    super().__init__(filename)
+    self._color_data = {
+        'format': 'hsv', 'channels': {'h': [], 's': [], 'v': []}
+    }
+
+  def __del__(self):
+    super().__del__()
+
+
+class ColorJsonHLS(ColorJson):
+  def __init__(self, filename):
+    super().__init__(filename)
+    self._color_data = {
+        'format': 'hls', 'channels': {'h': [], 'l': [], 's': []}
     }
 
 
@@ -161,6 +211,7 @@ class ColorReader(metaclass=abc.ABCMeta):
     self._img_mark = self._img.copy()
     self.__drawer = RectDrawer(self.__window, self._img, rect_color)
     self.__rect = [[0, 0], [0, 0]]
+    self._color_json = None
 
   @abc.abstractmethod
   def _get_color_format(self, img_roi):
@@ -191,6 +242,7 @@ class ColorReader(metaclass=abc.ABCMeta):
       self.__rect[1] = [x, y]
       if self.__rect[0] != self.__rect[1]:
         color = self.read_rect_color(self.__rect)
+        self._color_json.append(color)
         print('\t'.join(map(str, color)))
 
   def processing(self):
@@ -206,21 +258,22 @@ class ColorReader(metaclass=abc.ABCMeta):
     cv2.destroyAllWindows()
 
   @staticmethod
-  def create(color_format, image_loader, filter_type):
+  def create(color_format, image_loader, filter_type, out_json_filename):
     if color_format == 'rgb':
-      return ColorReaderRGB(image_loader, filter_type)
+      return ColorReaderRGB(image_loader, out_json_filename, filter_type)
     if color_format == 'yuv':
-      return ColorReaderYUV(image_loader, filter_type)
+      return ColorReaderYUV(image_loader, out_json_filename, filter_type)
     if color_format == 'hsv':
-      return ColorReaderHSV(image_loader, filter_type)
+      return ColorReaderHSV(image_loader, out_json_filename, filter_type)
     if color_format == 'hls':
-      return ColorReaderHLS(image_loader, filter_type)
+      return ColorReaderHLS(image_loader, out_json_filename, filter_type)
     raise AttributeError('make_color_reader: ' + color_format + ' not found')
 
 
 class ColorReaderRGB(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ColorJsonRGB(json_filename)
     print('R', 'G', 'B', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -230,6 +283,7 @@ class ColorReaderRGB(ColorReader):
 class ColorReaderYUV(ColorReader):
   def __init__(self, filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ColorJsonYUV(json_filename)
     print('Y', 'U', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -239,6 +293,7 @@ class ColorReaderYUV(ColorReader):
 class ColorReaderHSV(ColorReader):
   def __init__(self, filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ColorJsonHSV(json_filename)
     print('H', 'S', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -261,10 +316,6 @@ def parse_video_size_arg(video_size):
   return None
 
 
-#####test
-rgb_json = ColorJsonRGB('bbb.json')
-sys.exit(0)
-####test
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -273,6 +324,14 @@ def main():
       type=str,
       help='Image file',
       default=''
+  )
+
+  parser.add_argument(
+      '-o',
+      '--out',
+      type=str,
+      help='Json file',
+      default='color_data.json'
   )
 
   parser.add_argument(
@@ -311,6 +370,7 @@ def main():
   video_size = parse_video_size_arg(args.video_size)
   filter_type = args.filter.lower()
   img_file = args.imgfile
+  out_json_file = args.out
 
   if not os.path.exists(img_file):
     sys.exit('File not found')
@@ -318,7 +378,12 @@ def main():
   image_loader = ImageLoader.create(img_file, pixel_format, video_size)
 
   try:
-    color_reader = ColorReader.create(output_format, image_loader, filter_type)
+    color_reader = ColorReader.create(
+        output_format,
+        image_loader,
+        filter_type,
+        out_json_file
+    )
     color_reader.processing()
   except (AttributeError, ValueError) as err:
     err = sys.exc_info()[1]
