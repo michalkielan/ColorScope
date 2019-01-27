@@ -286,6 +286,7 @@ class ColorReaderHSV(ColorReader):
 class ColorReaderHLS(ColorReader):
   def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ColorJsonHLS(json_filename)
     print('H', 'L', 'S', sep='\t')
 
   def _get_color_format(self, img_roi):
