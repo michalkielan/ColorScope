@@ -46,11 +46,11 @@ class Resources:
     self.rect = [[1,1],[5,5]]
 
     if not is_windows():
-      os.system('ffmpeg -f rawvideo -video_size 1280x720 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1280_720.yuv')
-      os.system('ffmpeg -f rawvideo -video_size 1280x720 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1280_720.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1280x720 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1280_720.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1280x720 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1280_720.yuv')
 
-      os.system('ffmpeg -f rawvideo -video_size 1920x1080 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1920_1080.yuv')
-      os.system('ffmpeg -f rawvideo -video_size 1920x1080 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1920_1080.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1920x1080 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1920_1080.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1920x1080 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1920_1080.yuv')
 
       self.raw_nv12_1920_1080 = 'raw_nv12_1920_1080.yuv'
       self.raw_nv21_1920_1080 = 'raw_nv21_1920_1080.yuv'
@@ -69,6 +69,14 @@ class Resources:
     img_blue = Image.new('RGB', size, (0, 0, 255))
     img_black = Image.new('RGB', size, (0, 0 ,0))
     img_white = Image.new('RGB', size, (255, 255, 255))
+
+    self.json_rgb = "{\"format\": \"rgb\", \"channels\": {\"r\": [254, 237, 254], \"g\": [219, 254, 250], \"b\": [21, 51, 168]}}"
+
+    self.json_yuv = "{\"format\": \"yuv\", \"channels\": {\"y\": [0, 185, 248], \"u\": [128, 82, 114], \"v\": [128, 188, 133]}}"
+
+    self.json_hsv = "{\"format\": \"hsv\", \"channels\": {\"h\": [24, 1, 112], \"s\": [227, 217, 145], \"v\": [255, 254, 254]}}"
+
+    self.json_hls = "{\"format\": \"hls\", \"channels\": {\"h\": [9, 61, 150], \"l\": [155, 234, 166], \"s\": [237, 253, 254]}}"
 
     img_red.save(self.red)
     img_green.save(self.green)
@@ -114,24 +122,24 @@ class TestColorscope(unittest.TestCase):
 
   def test_factory_color_read_create(self):
     imloader = colorscope.ImageLoaderDefault(self.res.red)
-    colorscope.ColorReader.create('rgb', imloader, 'avg')
-    colorscope.ColorReader.create('yuv', imloader, 'avg')
-    colorscope.ColorReader.create('hsv', imloader, 'avg')
-    colorscope.ColorReader.create('hls', imloader, 'avg')
+    colorscope.ColorReader.create('rgb', imloader, 'avg', 'test_.json')
+    colorscope.ColorReader.create('yuv', imloader, 'avg', 'test_.json')
+    colorscope.ColorReader.create('hsv', imloader, 'avg', 'test_.json')
+    colorscope.ColorReader.create('hls', imloader, 'avg', 'test_.json')
 
     with self.assertRaises(AttributeError):
-      colorscope.ColorReader.create('', '', '')
-      colorscope.ColorReader.create('invalid', '', '')
+      colorscope.ColorReader.create('', '', '', '')
+      colorscope.ColorReader.create('invalid', '', '', '')
 
   def test_colorscope_instances(self):
     imloader = colorscope.ImageLoaderDefault(self.res.red)
-    csRGB = colorscope.ColorReaderRGB(imloader)
-    csYUV = colorscope.ColorReaderYUV(imloader)
-    csHSV = colorscope.ColorReaderHSV(imloader)
-    csHLS = colorscope.ColorReaderHLS(imloader)
+    csRGB = colorscope.ColorReaderRGB(imloader, 'test_.json', 'test_.json')
+    csYUV = colorscope.ColorReaderYUV(imloader, 'test_.json', 'test_.json')
+    csHSV = colorscope.ColorReaderHSV(imloader, 'test_.json', 'test_.json')
+    csHLS = colorscope.ColorReaderHLS(imloader, 'test_.json', 'test_.json')
 
     with self.assertRaises(TypeError):
-      csINV = colorscope.ColorReader(imloader)
+      csINV = colorscope.ColorReader(imloader, 'test_.json')
 
   def test_image_loader_factory_nv12(self):
     if not is_windows():
@@ -165,7 +173,7 @@ class TestColorscope(unittest.TestCase):
     if not is_windows():
       with self.assertRaises(ValueError):
         imloader = colorscope.ImageLoader.create(self.res.raw_nv21_1920_1080, 'nv21', [2000, 2000])
-        colorscope.ColorReader.create('rgb', imloader, '')
+        colorscope.ColorReader.create('rgb', imloader, '', '')
 
   def test_image_loader_nv12_1080p(self):
     if not is_windows():
@@ -202,28 +210,28 @@ class TestColorscope(unittest.TestCase):
   def test_color_rgb_red(self):
     img_file = self.res.red
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderRgbMock(img_loader)
+    cr = ColorReaderRgbMock(img_loader, 'test_.json')
     rgb = cr.read_rect_color(self.res.rect)
     self.assertEqual(rgb , [255, 0, 0])
 
   def test_color_hsv_red(self):
     img_file = self.res.red
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderHsvMock(img_loader)
+    cr = ColorReaderHsvMock(img_loader, 'test_.json')
     hsv = cr.read_rect_color(self.res.rect)
     self.assertEqual(hsv , [0, 255, 255])
 
   def test_color_hls_red(self):
     img_file = self.res.red
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderHlsMock(img_loader)
+    cr = ColorReaderHlsMock(img_loader, 'test_.json')
     hls = cr.read_rect_color(self.res.rect)
     self.assertEqual(hls , [0, 128, 255])
 
   def test_color_yuv_red(self):
     img_file = self.res.red
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderYuvMock(img_loader)
+    cr = ColorReaderYuvMock(img_loader, 'test_.json')
     yuv = cr.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [76, 91, 255])
 
@@ -242,28 +250,28 @@ class TestColorscope(unittest.TestCase):
   def test_color_rgb_green(self):
      img_file = self.res.green
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader)
+     cr = ColorReaderRgbMock(img_loader, 'test_.json')
      rgb = cr.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [0, 255, 0])
 
   def test_color_hsv_green(self):
      img_file = self.res.green
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader)
+     cr = ColorReaderHsvMock(img_loader, 'test_.json')
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv , [60, 255, 255])
 
   def test_color_hls_green(self):
      img_file = self.res.green
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader)
+     cr = ColorReaderHlsMock(img_loader, 'test_.json')
      hls = cr.read_rect_color(self.res.rect)
      self.assertEqual(hls , [60, 128, 255])
 
   def test_color_yuv_green(self):
     img_file = self.res.green
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderYuvMock(img_loader)
+    cr = ColorReaderYuvMock(img_loader, 'test_.json')
     yuv = cr.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [150, 54, 0])
 
@@ -282,28 +290,28 @@ class TestColorscope(unittest.TestCase):
   def test_color_rgb_blue(self):
      img_file = self.res.blue
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader)
+     cr = ColorReaderRgbMock(img_loader, 'test_.json')
      rgb = cr.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [0, 0, 255])
 
   def test_color_hsv_blue(self):
      img_file = self.res.blue
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader)
+     cr = ColorReaderHsvMock(img_loader, 'test_.json')
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv , [120, 255, 255])
 
   def test_color_hls_blue(self):
      img_file = self.res.blue
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader)
+     cr = ColorReaderHlsMock(img_loader, 'test_.json')
      hls = cr.read_rect_color(self.res.rect)
      self.assertEqual(hls, [120, 128, 255])
 
   def test_color_yuv_blue(self):
     img_file = self.res.blue
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderYuvMock(img_loader)
+    cr = ColorReaderYuvMock(img_loader, 'test_.json')
     yuv = cr.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [29, 239, 103])
 
@@ -322,28 +330,28 @@ class TestColorscope(unittest.TestCase):
   def test_color_rgb_black(self):
      img_file = self.res.black
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader)
+     cr = ColorReaderRgbMock(img_loader, 'test_.json')
      rgb = cr.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [0, 0, 0])
 
   def test_color_hsv_black(self):
      img_file = self.res.black
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader)
+     cr = ColorReaderHsvMock(img_loader, 'test_.json')
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv , [0, 0, 0])
 
   def test_color_hls_black(self):
      img_file = self.res.black
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader)
+     cr = ColorReaderHlsMock(img_loader, 'test_.json')
      hls = cr.read_rect_color(self.res.rect)
      self.assertEqual(hls , [0, 0, 0])
 
   def test_color_yuv_black(self):
     img_file = self.res.black
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderYuvMock(img_loader)
+    cr = ColorReaderYuvMock(img_loader, 'test_.json')
     yuv = cr.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [0, 128, 128])
 
@@ -362,28 +370,28 @@ class TestColorscope(unittest.TestCase):
   def test_color_rgb_white(self):
      img_file = self.res.white
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader)
+     cr = ColorReaderRgbMock(img_loader, 'test_.json')
      rgb = cr.read_rect_color(self.res.rect)
      self.assertEqual(rgb , [255, 255, 255])
 
   def test_color_hsv_white(self):
      img_file = self.res.white
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader)
+     cr = ColorReaderHsvMock(img_loader, 'test_.json')
      hsv = cr.read_rect_color(self.res.rect)
      self.assertEqual(hsv, [0, 0, 255])
 
   def test_color_hls_white(self):
      img_file = self.res.white
      img_loader = colorscope.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader)
+     cr = ColorReaderHlsMock(img_loader, 'test_.json')
      hls = cr.read_rect_color(self.res.rect)
      self.assertEqual(hls, [0, 255, 0])
 
   def test_color_yuv_white(self):
     img_file = self.res.white
     img_loader = colorscope.ImageLoaderDefault(img_file)
-    cr = ColorReaderYuvMock(img_loader)
+    cr = ColorReaderYuvMock(img_loader, 'test_.json')
     yuv = cr.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [255, 128, 128])
 
@@ -398,6 +406,54 @@ class TestColorscope(unittest.TestCase):
     color_filter = colorscope.ColorChannelFilterAverage()
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r] , [255, 255, 255])
+
+  def test_json_rgb(self):
+    json_filename = 'rgb_json.json'
+    cj = colorscope.ColorJsonRGB(json_filename)
+    cj.append([254, 219, 21])
+    cj.append([237, 254, 51])
+    cj.append([254, 250, 168])
+    cj.write()
+    with open (json_filename, 'r') as jsonfile:
+      json_rgb = jsonfile.readlines()
+      self.assertEqual(json_rgb[0], self.res.json_rgb)
+    os.remove(json_filename)
+
+  def test_json_yuv(self):
+    json_filename = 'yuv_json.json'
+    cj = colorscope.ColorJsonYUV(json_filename)
+    cj.append([0, 128, 128])
+    cj.append([185, 82, 188])
+    cj.append([248, 114, 133])
+    cj.write()
+    with open (json_filename, 'r') as jsonfile:
+      json_yuv = jsonfile.readlines()
+      self.assertEqual(json_yuv[0], self.res.json_yuv)
+    os.remove(json_filename)
+
+  def test_json_hsv(self):
+    json_filename = 'hsv_json.json'
+    cj = colorscope.ColorJsonHSV(json_filename)
+    cj.append([24, 227, 255])
+    cj.append([1, 217, 254])
+    cj.append([112, 145, 254])
+    cj.write()
+    with open (json_filename, 'r') as jsonfile:
+      json_hsv = jsonfile.readlines()
+      self.assertEqual(json_hsv[0], self.res.json_hsv)
+    os.remove(json_filename)
+
+  def test_json_hls(self):
+    json_filename = 'hls_json.json'
+    cj = colorscope.ColorJsonHLS(json_filename)
+    cj.append([9, 155, 237])
+    cj.append([61, 234, 253])
+    cj.append([150, 166, 254])
+    cj.write()
+    with open (json_filename, 'r') as jsonfile:
+      json_hls = jsonfile.readlines()
+      self.assertEqual(json_hls[0], self.res.json_hls)
+    os.remove(json_filename)
 
   def close_window(self):
     if fake_xwindow_supported():
@@ -416,7 +472,7 @@ class TestColorscope(unittest.TestCase):
       closer = threading.Thread(target=self.close_window)
       closer.start()
       image_loader = colorscope.ImageLoaderDefault(self.res.red)
-      csRGB = colorscope.ColorReaderRGB(image_loader)
+      csRGB = colorscope.ColorReaderRGB(image_loader, 'test_.json')
       csRGB.processing()
       closer.join()
 
