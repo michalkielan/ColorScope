@@ -46,11 +46,11 @@ class Resources:
     self.rect = [[1,1],[5,5]]
 
     if not is_windows():
-      os.system('ffmpeg -y -f rawvideo -video_size 1280x720 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1280_720.yuv')
-      os.system('ffmpeg -y -f rawvideo -video_size 1280x720 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1280_720.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1280x720 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1280_720.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1280x720 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1280_720.yuv')
 
-      os.system('ffmpeg -y -f rawvideo -video_size 1920x1080 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1920_1080.yuv')
-      os.system('ffmpeg -y -f rawvideo -video_size 1920x1080 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1920_1080.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1920x1080 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1920_1080.yuv')
+      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1920x1080 -pixel_format nv21 -i /dev/urandom -vframes 1 raw_nv21_1920_1080.yuv')
 
       self.raw_nv12_1920_1080 = 'raw_nv12_1920_1080.yuv'
       self.raw_nv21_1920_1080 = 'raw_nv21_1920_1080.yuv'
