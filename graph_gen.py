@@ -1,49 +1,12 @@
 import cv2
 import numpy as np
+import json
+import sys
 
 def get_plot_scaler(): return 3
 
-ref = [ 
-[155,  46,   84],
-[173,  120,  106],
-[112,  101,  184],
-[56,   35,   101],
-[128,  113,  151],
-[87,   102,  187],
-[8,    128,  210],
-[117,  119,  216],
-[177,  117,  194],
-[136,  40,   191],
-[42,   108,  214],
-[14,   139,  230],
-[118,  99,   230],
-[67,   68,   204],
-[1,    104,  221],
-[24,   136,  245],
-[163,  122,  211],
-[105,  94,   242]
-]
 
-cap = [
-[154,  3,    136],
-[171,  115,  127],
-[113,  92,   209],
-[55,   25,   195],
-[130,  106,  187],
-[83,   110,  207],
-[7,    121,  235],
-[120,  111,  246],
-[175,  108,  244],
-[135,  24,   255],
-[43,   119,  241],
-[14,   136,  254],
-[120,  87,   255],
-[64,   70,   246],
-[0,    92,   255],
-[25,   136,  255],
-[161,  110,  255],
-[105,  85,   255]
-]
+
 
 def draw_circle(window, pos, bgr):
   circle_rad = 6
@@ -81,11 +44,39 @@ def draw_samples(plane, ref, cap):
     draw_circle(plane, ref_pos, (0, 0, 0))
     draw_circle(plane, cap_pos, (0, 0, 244))
 
-plane = gen_hv_plane()
-big = cv2.resize(plane, (0,0), fx=get_plot_scaler(), fy=get_plot_scaler())
-draw_samples(big, ref, cap)
-math_axis_img = cv2.flip(big, 0)
-cv2.imshow('window', math_axis_img)
+def get_json_data(color_json_filename):
+  with open(color_json_filename) as color_file:
+    color_data = json.load(color_file)
+    return color_data
+
+def calc_saturation(ref_color_json_filename, cap_color_json_filename):
+  ref_color_data = get_json_data(ref_color_json_filename)
+  cap_color_data = get_json_data(cap_color_json_filename)
+
+  if ref_color_data['format'] != 'hls' or cap_color_data['format'] != 'hls':
+    raise AttributeError('Color not HLS type')
+
+  ref_sat = ref_color_data['channels']['s']
+  cap_sat = cap_color_data['channels']['s']
+
+  perc_diff  = lambda ref, cap : (cap * 100.0) / ref 
+
+  diff_sat_perc_data = [perc_diff(ref, cap) for ref, cap in zip(ref_sat, cap_sat)]
+  diff_sat_perc = np.average(diff_sat_perc_data)
+
+  print('Saturation :', round(diff_sat_perc, 2), '%')
+
+
+
+
+
+calc_saturation('ref_data.json', 'cap_data.json')
+sys.exit(0)
+#plane = gen_hv_plane()
+#big = cv2.resize(plane, (0,0), fx=get_plot_scaler(), fy=get_plot_scaler())
+#draw_samples(big, ref, cap)
+#math_axis_img = cv2.flip(big, 0)
+#cv2.imshow('window', math_axis_img)
 
 while True:
   pressedkey = cv2.waitKey(100)
