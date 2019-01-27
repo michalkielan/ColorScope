@@ -17,8 +17,9 @@ install:
   - pip install -r requirements.txt -r tst_requirements.txt
 
 script:
-  - pylint colorscope.py
-  - pytest --cov colorscope tst_colorscope.py
+  - pylint colorscope.py ip/*
+  - pytest --cov-report term --cov-branch --cov=ip tst_colorscope.py
+
 
 after_success:
   - coveralls
