@@ -1,9 +1,8 @@
-import cv2
 import os
-import numpy as np
 import json
 import sys
-
+import numpy as np
+import cv2
 
 class Draw:
   @staticmethod
@@ -11,11 +10,11 @@ class Draw:
     circle_rad = 6
     cv2.circle(img, pos, circle_rad, bgr, -1)
     cv2.circle(img, pos, circle_rad, (0, 0, 0), 1)
-  
+
   @staticmethod
-  def line(img, p1, p2, bgr):
-    cv2.line(img, p1, p2, bgr, thickness=1, lineType=8, shift=0)
-  
+  def line(img, point1, point2, bgr):
+    cv2.line(img, point1, point2, bgr, thickness=1, lineType=8, shift=0)
+
   @staticmethod
   def rect(img, pos, bgr):
     circle_rad = 3
@@ -45,29 +44,30 @@ class PlaneHS:
     self.__ref_color = ref_color_data
     self.__cap_color = cap_color_data
     self.__scaler = scaler
-    self.__plane = self.__generateHS()
+    self.__plane = self.__generate_hs()
 
   @staticmethod
-  def __generateHS():
+  def __generate_hs():
     img = np.zeros((180, 255, 3), np.uint8)
     height, width, channels = img.shape
+    del channels
     img_hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
     for y in range(0, height):
       for x in range(0, width):
-        s, h = x, y
-        img_hls[y, x] = [h, 128, s]
+        s_channel, h_channel = x, y
+        img_hls[y, x] = [h_channel, 128, s_channel]
     return img_hls
-  
+
   def __draw_samples(self, img):
     size = len(self.__ref_color.get()['channels']['h'])
-    
+
     for i in range(0, size):
       ref_h = self.__ref_color.get()['channels']['h'][i]
       ref_s = self.__ref_color.get()['channels']['s'][i]
-      
+
       cap_h = self.__cap_color.get()['channels']['h'][i]
       cap_s = self.__cap_color.get()['channels']['s'][i]
-       
+
       ref_pos = ref_s * self.__scaler, ref_h * self.__scaler
       cap_pos = cap_s * self.__scaler, cap_h * self.__scaler
 
@@ -76,11 +76,11 @@ class PlaneHS:
       Draw.circle(img, cap_pos, (0, 0, 244))
 
   def get_plot(self):
-    img_scaled = cv2.resize(self.__plane, (0,0), fx=self.__scaler, fy=self.__scaler)
+    img_scaled = cv2.resize(self.__plane, (0, 0), fx=self.__scaler, fy=self.__scaler)
     self.__draw_samples(img_scaled)
     img_math_view = cv2.flip(img_scaled, 0)
     return img_math_view
-    
+
 
 class ColorMeter:
   def __init__(self, ref_color, cap_color):
@@ -97,13 +97,13 @@ class ColorMeter:
     ref_h, cap_h = ref_channels['h'], cap_channels['h']
     ref_l, cap_l = ref_channels['l'], cap_channels['l']
     ref_s, cap_s = ref_channels['s'], cap_channels['s']
-  
-    delta_perc  = lambda ref, cap : (cap * 100.0) / ref 
-  
+
+    delta_perc = lambda ref, cap: (cap * 100.0) / ref
+
     delta_h_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_h, cap_h)]
     delta_l_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_l, cap_l)]
     delta_s_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_s, cap_s)]
-    
+
     return [
         np.average(delta_h_perc_data),
         np.average(delta_l_perc_data),
@@ -115,19 +115,19 @@ def main():
   cap_json_filename = sys.argv[2]
   ref_color = ColorJsonParser(ref_json_filename)
   cap_color = ColorJsonParser(cap_json_filename)
-  
+
   color_meter = ColorMeter(ref_color, cap_color)
   h_perc, l_perc, s_perc = color_meter.get_hls_delta_perc()
-  
+
   print('\u0394H :', round(h_perc, 2), '%')
   print('\u0394L :', round(l_perc, 2), '%')
   print('\u0394S :', round(s_perc, 2), '%')
-  
+
   window_name = 'window'
   hs_plane = PlaneHS(ref_color, cap_color, 3)
   img = hs_plane.get_plot()
   cv2.imshow(window_name, img)
-  
+
   while True:
     pressedkey = cv2.waitKey(100)
     if pressedkey == 27 or pressedkey == ord('q'):
