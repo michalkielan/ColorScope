@@ -5,9 +5,6 @@ import sys
 
 def get_plot_scaler(): return 3
 
-
-
-
 def draw_circle(window, pos, bgr):
   circle_rad = 6
   cv2.circle(window, pos, circle_rad, bgr, -1)
@@ -44,6 +41,17 @@ def draw_samples(plane, ref, cap):
     draw_circle(plane, ref_pos, (0, 0, 0))
     draw_circle(plane, cap_pos, (0, 0, 244))
 
+class ColorJsonParser:
+  def __init__(self, json_filename):
+    if not os.path.exists(json_filename):
+      raise FileNotFoundError('Json file :' + json_filename + ' not found')
+
+    with open(json_filename) as color_file:
+      self.__color_data = json.load(color_file)
+
+  def get():
+    return self.__color_data
+
 def get_json_data(color_json_filename):
   with open(color_json_filename) as color_file:
     color_data = json.load(color_file)
@@ -56,18 +64,25 @@ def calc_saturation(ref_color_json_filename, cap_color_json_filename):
   if ref_color_data['format'] != 'hls' or cap_color_data['format'] != 'hls':
     raise AttributeError('Color not HLS type')
 
-  ref_sat = ref_color_data['channels']['s']
-  cap_sat = cap_color_data['channels']['s']
+  ref_h, cap_h = ref_color_data['channels']['h'], cap_color_data['channels']['h']
+  ref_l, cap_l = ref_color_data['channels']['l'], cap_color_data['channels']['l']
+  ref_s, cap_s = ref_color_data['channels']['s'], cap_color_data['channels']['s']
 
-  perc_diff  = lambda ref, cap : (cap * 100.0) / ref 
+  delta_perc  = lambda ref, cap : (cap * 100.0) / ref 
 
-  diff_sat_perc_data = [perc_diff(ref, cap) for ref, cap in zip(ref_sat, cap_sat)]
-  diff_sat_perc = np.average(diff_sat_perc_data)
+  delta_h_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_h, cap_h)]
+  delta_l_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_l, cap_l)]
+  delta_s_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_s, cap_s)]
+  
+  delta_h_perc, delta_s_perc, delta_l_perc = [
+      np.average(delta_h_perc_data),
+      np.average(delta_l_perc_data),
+      np.average(delta_s_perc_data)
+  ]
 
-  print('Saturation :', round(diff_sat_perc, 2), '%')
-
-
-
+  print('\u0394H :', round(delta_h_perc, 2), '%')
+  print('\u0394L :', round(delta_l_perc, 2), '%')
+  print('\u0394S :', round(delta_s_perc, 2), '%')
 
 
 calc_saturation('ref_data.json', 'cap_data.json')
