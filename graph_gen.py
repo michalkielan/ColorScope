@@ -114,7 +114,7 @@ def main():
   ref_json_filename = sys.argv[1]
   cap_json_filename = sys.argv[2]
   ref_color = ColorJsonParser(ref_json_filename)
-  cap_color = ColorJsonParser(ref_json_filename)
+  cap_color = ColorJsonParser(cap_json_filename)
   
   color_meter = ColorMeter(ref_color, cap_color)
   h_perc, l_perc, s_perc = color_meter.get_hls_delta_perc()
