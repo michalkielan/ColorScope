@@ -338,7 +338,9 @@ class PlaneHS:
 
   @staticmethod
   def __generate_hs():
-    img = np.zeros((180, 255, 3), np.uint8)
+    max_hue = 180
+    max_sat = 255
+    img = np.zeros((max_hue, max_sat, 3), np.uint8)
     height, width, channels = img.shape
     del channels
     img_hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
@@ -352,11 +354,11 @@ class PlaneHS:
     size = len(self.__ref_color.get()['channels']['h'])
 
     for i in range(0, size):
-      ref_h = self.__ref_color.get()['channels']['h'][i]
-      ref_s = self.__ref_color.get()['channels']['s'][i]
+      cap_channels = self.__ref_color.get()['channels']
+      ref_channels = self.__cap_color.get()['channels']
 
-      cap_h = self.__cap_color.get()['channels']['h'][i]
-      cap_s = self.__cap_color.get()['channels']['s'][i]
+      ref_h, ref_s = ref_channels['h'][i], ref_channels['s'][i]
+      cap_h, cap_s = cap_channels['h'][i], cap_channels['s'][i]
 
       ref_pos = ref_s * self.__scaler, ref_h * self.__scaler
       cap_pos = cap_s * self.__scaler, cap_h * self.__scaler
