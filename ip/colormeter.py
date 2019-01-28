@@ -20,7 +20,7 @@ class ColorMeter:
     ref_l, cap_l = ref_channels['l'], cap_channels['l']
     ref_s, cap_s = ref_channels['s'], cap_channels['s']
 
-    delta_perc = lambda ref, cap: (cap * 100.0) / ref
+    delta_perc = lambda ref, cap: 0 if ref == 0 else (cap * 100.0) / ref
 
     delta_h_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_h, cap_h)]
     delta_l_perc_data = [delta_perc(ref, cap) for ref, cap in zip(ref_l, cap_l)]
