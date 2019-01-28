@@ -1,0 +1,8 @@
+ pylint
+ opencv-python
+ xvfbwrapper
+ pytest-cov
+ coveralls
+ PyUserInput
+ pillow
+
