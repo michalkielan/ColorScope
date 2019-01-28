@@ -6,6 +6,7 @@ import cv2
 import ip.colorjson
 import ip.colormeter
 
+
 class Const:
   @staticmethod
   def ref_color():
