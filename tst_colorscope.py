@@ -425,7 +425,7 @@ class TestColorscope(unittest.TestCase):
     cj.append([254, 250, 168])
     cj.write()
     with open (json_filename, 'r') as jsonfile:
-      json_rgb = jsonfile.readlines()
+      json_rgb = jsonfile.read().splitlines()
       self.assertEqual(json_rgb[0], self.res.json_rgb)
     os.remove(json_filename)
 
@@ -437,7 +437,7 @@ class TestColorscope(unittest.TestCase):
     cj.append([248, 114, 133])
     cj.write()
     with open (json_filename, 'r') as jsonfile:
-      json_yuv = jsonfile.readlines()
+      json_yuv = jsonfile.read().splitlines()
       self.assertEqual(json_yuv[0], self.res.json_yuv)
     os.remove(json_filename)
 
@@ -449,7 +449,7 @@ class TestColorscope(unittest.TestCase):
     cj.append([112, 145, 254])
     cj.write()
     with open (json_filename, 'r') as jsonfile:
-      json_hsv = jsonfile.readlines()
+      json_hsv = jsonfile.read().splitlines()
       self.assertEqual(json_hsv[0], self.res.json_hsv)
     os.remove(json_filename)
 
@@ -461,7 +461,7 @@ class TestColorscope(unittest.TestCase):
     cj.append([150, 166, 254])
     cj.write()
     with open (json_filename, 'r') as jsonfile:
-      json_hls = jsonfile.readlines()
+      json_hls = jsonfile.read().splitlines()
       self.assertEqual(json_hls[0], self.res.json_hls)
     os.remove(json_filename)
 
