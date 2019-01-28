@@ -118,6 +118,11 @@ class TestColorscope(unittest.TestCase):
       self.xvfb.start()
     self.res = Resources()
 
+  def test_const(self):
+    self.assertNotEqual(ip.graph.Const.ref_color(), None)
+    self.assertNotEqual(ip.graph.Const.cap_color(), None)
+    self.assertEqual(ip.graph.Const.Symbols.delta(), '\u0394')
+
   def test_factory_color_read_create(self):
     imloader = ip.imgloader.ImageLoaderDefault(self.res.red)
     ip.colorreader.ColorReader.create('rgb', imloader, 'avg', 'test.json')
