@@ -76,14 +76,6 @@ class Resources:
     img_black = Image.new('RGB', size, (0, 0 ,0))
     img_white = Image.new('RGB', size, (255, 255, 255))
 
-    self.json_rgb = "{\"format\": \"rgb\", \"channels\": {\"r\": [254, 237, 254], \"g\": [219, 254, 250], \"b\": [21, 51, 168]}}"
-
-    self.json_yuv = "{\"format\": \"yuv\", \"channels\": {\"y\": [0, 185, 248], \"u\": [128, 82, 114], \"v\": [128, 188, 133]}}"
-
-    self.json_hsv = "{\"format\": \"hsv\", \"channels\": {\"h\": [24, 1, 112], \"s\": [227, 217, 145], \"v\": [255, 254, 254]}}"
-
-    self.json_hls = "{\"format\": \"hls\", \"channels\": {\"h\": [9, 61, 150], \"l\": [155, 234, 166], \"s\": [237, 253, 254]}}"
-
     img_red.save(self.red)
     img_green.save(self.green)
     img_blue.save(self.blue)
@@ -424,10 +416,12 @@ class TestColorscope(unittest.TestCase):
     cj.append([237, 254, 51])
     cj.append([254, 250, 168])
     cj.write()
-    with open (json_filename, 'r') as jsonfile:
-      json_rgb = jsonfile.read().splitlines()
-      self.assertEqual(json_rgb[0], self.res.json_rgb)
-    os.remove(json_filename)
+
+    cjp = ip.colorjson.ColorJsonParser(json_filename)
+    self.assertEqual('rgb', cjp.get()['format'])
+    self.assertEqual([254, 237, 254], cjp.get()['channels']['r'])
+    self.assertEqual([219, 254, 250], cjp.get()['channels']['g'])
+    self.assertEqual([21, 51, 168], cjp.get()['channels']['b'])
 
   def test_json_yuv(self):
     json_filename = 'yuv_json.json'
@@ -436,10 +430,12 @@ class TestColorscope(unittest.TestCase):
     cj.append([185, 82, 188])
     cj.append([248, 114, 133])
     cj.write()
-    with open (json_filename, 'r') as jsonfile:
-      json_yuv = jsonfile.read().splitlines()
-      self.assertEqual(json_yuv[0], self.res.json_yuv)
-    os.remove(json_filename)
+    
+    cjp = ip.colorjson.ColorJsonParser(json_filename)
+    self.assertEqual('yuv', cjp.get()['format'])
+    self.assertEqual([0, 185, 248], cjp.get()['channels']['y'])
+    self.assertEqual([128, 82, 114], cjp.get()['channels']['u'])
+    self.assertEqual([128, 188, 133], cjp.get()['channels']['v'])
 
   def test_json_hsv(self):
     json_filename = 'hsv_json.json'
@@ -448,10 +444,12 @@ class TestColorscope(unittest.TestCase):
     cj.append([1, 217, 254])
     cj.append([112, 145, 254])
     cj.write()
-    with open (json_filename, 'r') as jsonfile:
-      json_hsv = jsonfile.read().splitlines()
-      self.assertEqual(json_hsv[0], self.res.json_hsv)
-    os.remove(json_filename)
+    
+    cjp = ip.colorjson.ColorJsonParser(json_filename)
+    self.assertEqual('hsv', cjp.get()['format'])
+    self.assertEqual([24, 1, 112], cjp.get()['channels']['h'])
+    self.assertEqual([227, 217, 145], cjp.get()['channels']['s'])
+    self.assertEqual([255, 254, 254], cjp.get()['channels']['v'])
 
   def test_json_hls(self):
     json_filename = 'hls_json.json'
@@ -460,10 +458,12 @@ class TestColorscope(unittest.TestCase):
     cj.append([61, 234, 253])
     cj.append([150, 166, 254])
     cj.write()
-    with open (json_filename, 'r') as jsonfile:
-      json_hls = jsonfile.read().splitlines()
-      self.assertEqual(json_hls[0], self.res.json_hls)
-    os.remove(json_filename)
+    
+    cjp = ip.colorjson.ColorJsonParser(json_filename)
+    self.assertEqual('hls', cjp.get()['format'])
+    self.assertEqual([9, 61, 150], cjp.get()['channels']['h'])
+    self.assertEqual([155, 234, 166], cjp.get()['channels']['l'])
+    self.assertEqual([237, 253, 254], cjp.get()['channels']['s'])
 
   def close_window(self):
     if fake_xwindow_supported():
