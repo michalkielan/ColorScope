@@ -6,6 +6,7 @@ import cv2
 import ip.colorfilter
 import ip.colorjson
 import ip.draw
+import ip.graph
 
 
 class ColorReader(metaclass=abc.ABCMeta):
@@ -57,14 +58,7 @@ class ColorReader(metaclass=abc.ABCMeta):
   def processing(self):
     cv2.imshow(self.__window, self._img)
     cv2.setMouseCallback(self.__window, self.__on_mouse_event)
-    while True:
-      pressedkey = cv2.waitKey(100)
-      if pressedkey == 27 or pressedkey == ord('q'):
-        cv2.destroyAllWindows()
-        break
-      if cv2.getWindowProperty(self.__window, cv2.WND_PROP_VISIBLE) < 1:
-        break
-    cv2.destroyAllWindows()
+    ip.graph.show_window(self.__window)
     self._color_json.write()
 
   @staticmethod

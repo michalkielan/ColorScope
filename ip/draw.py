@@ -45,3 +45,7 @@ class Draw:
     circle_rad = 3
     cv2.circle(img, pos, circle_rad, bgr, -1)
     cv2.circle(img, pos, circle_rad, (0, 0, 0), 1)
+
+  @staticmethod
+  def put_text(img, pos, text, size):
+    cv2.putText(img, text, pos, cv2.FONT_HERSHEY_SIMPLEX, size, 0)

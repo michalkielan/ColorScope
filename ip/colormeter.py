@@ -31,4 +31,3 @@ class ColorMeter:
         np.average(delta_l_perc_data),
         np.average(delta_s_perc_data)
     ]
-

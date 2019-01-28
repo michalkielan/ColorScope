@@ -6,6 +6,30 @@ import cv2
 import ip.colorjson
 import ip.colormeter
 
+class Const:
+  @staticmethod
+  def ref_color():
+    return (0, 0, 0)
+
+  @staticmethod
+  def cap_color():
+    return (0, 0, 244)
+
+  class Symbols:
+    @staticmethod
+    def delta():
+      return '\u0394'
+
+def show_window(window_name):
+  while True:
+    pressed_key = cv2.waitKey(100)
+    if pressed_key == 27 or pressed_key == ord('q'):
+      cv2.destroyAllWindows()
+      break
+    if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+      break
+  cv2.destroyAllWindows()
+
 
 class PlaneHS:
   def __init__(self, ref_color_data, cap_color_data, scaler):
@@ -42,8 +66,8 @@ class PlaneHS:
       cap_pos = cap_s * self.__scaler, cap_h * self.__scaler
 
       ip.draw.Draw.line(img, ref_pos, cap_pos, (0, 0, 0))
-      ip.draw.Draw.circle(img, ref_pos, (0, 0, 0))
-      ip.draw.Draw.circle(img, cap_pos, (0, 0, 244))
+      ip.draw.Draw.circle(img, ref_pos, Const.ref_color())
+      ip.draw.Draw.circle(img, cap_pos, Const.cap_color())
 
   def get_plot(self):
     img_scaled = cv2.resize(self.__plane, (0, 0), fx=self.__scaler, fy=self.__scaler)
@@ -59,30 +83,49 @@ class GraphGenerator:
     if self.__ref_color.get()['format'] != 'hls' or self.__cap_color.get()['format'] != 'hls':
       raise ValueError('Wrong format, HSL only supported (so far)')
 
-  def generate(self):
-    window_name = 'window'
+  @staticmethod
+  def __label_x(img, pos, text):
+    ip.draw.Draw.put_text(img, pos, text, 0.3)
+
+  @staticmethod
+  def __label_y(img, pos, text):
+    ip.draw.Draw.put_text(img, pos, text, 0.3)
+
+  def generate_hs(self):
+    window_name = 'HS error graph'
 
     color_meter = ip.colormeter.ColorMeter(self.__ref_color, self.__cap_color)
     h_perc, l_perc, s_perc = color_meter.get_hls_delta_perc()
 
-    print('\u0394H :', round(h_perc, 2), '%')
-    print('\u0394L :', round(l_perc, 2), '%')
-    print('\u0394S :', round(s_perc, 2), '%')
+    print(Const.Symbols.delta() + 'H [average] : ', round(h_perc, 2), '%', sep='')
+    print(Const.Symbols.delta() + 'L [average] : ', round(l_perc, 2), '%', sep='')
+    print(Const.Symbols.delta() + 'S [average] : ', round(s_perc, 2), '%', sep='')
 
     hs_plane = PlaneHS(self.__ref_color, self.__cap_color, 3)
     img = hs_plane.get_plot()
-    cv2.imshow(window_name, img)
 
-    while True:
-      pressedkey = cv2.waitKey(100)
-      if pressedkey == 27 or pressedkey == ord('q'):
-        cv2.destroyAllWindows()
-        break
-      if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
-        break
-    cv2.destroyAllWindows()
+    img_graph = cv2.copyMakeBorder(
+        img,
+        top=10,
+        bottom=30,
+        left=10,
+        right=10,
+        borderType=cv2.BORDER_CONSTANT,
+        value=[231, 235, 239]
+    )
+    self.__label_x(img_graph, (350, 570), 'S [0-255]')
+    self.__label_y(img_graph, (10, 220), 'H [0-180]')
+
+    ip.draw.Draw.circle(img_graph, (20, 20), Const.ref_color())
+    ip.draw.Draw.put_text(img_graph, (35, 25), 'Reference', 0.4)
+
+    ip.draw.Draw.circle(img_graph, (20, 40), Const.cap_color())
+    ip.draw.Draw.put_text(img_graph, (35, 45), 'Captured', 0.4)
+
+    cv2.imshow(window_name, img_graph)
+    show_window(window_name)
 
   @staticmethod
   def create(ref_json_filename, cap_json_filename):
     graph_generator = GraphGenerator(ref_json_filename, cap_json_filename)
-    graph_generator.generate()
+    graph_generator.generate_hs()
