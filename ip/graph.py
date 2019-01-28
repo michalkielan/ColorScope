@@ -32,8 +32,8 @@ class PlaneHS:
     size = len(self.__ref_color.get()['channels']['h'])
 
     for i in range(0, size):
-      cap_channels = self.__ref_color.get()['channels']
-      ref_channels = self.__cap_color.get()['channels']
+      ref_channels = self.__ref_color.get()['channels']
+      cap_channels = self.__cap_color.get()['channels']
 
       ref_h, ref_s = ref_channels['h'][i], ref_channels['s'][i]
       cap_h, cap_s = cap_channels['h'][i], cap_channels['s'][i]
