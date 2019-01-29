@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 import ip.colorjson
 import ip.colormeter
-
+import matplotlib.pyplot as plt
 
 class Const:
   @staticmethod
@@ -56,25 +56,10 @@ class PlaneHS:
   def __draw_samples(self, img):
     size = len(self.__ref_color.get()['channels']['h'])
 
-    for i in range(0, size):
-      ref_channels = self.__ref_color.get()['channels']
-      cap_channels = self.__cap_color.get()['channels']
-
-      ref_h, ref_s = ref_channels['h'][i], ref_channels['s'][i]
-      cap_h, cap_s = cap_channels['h'][i], cap_channels['s'][i]
-
-      ref_pos = ref_s * self.__scaler, ref_h * self.__scaler
-      cap_pos = cap_s * self.__scaler, cap_h * self.__scaler
-
-      ip.draw.Draw.line(img, ref_pos, cap_pos, (0, 0, 0))
-      ip.draw.Draw.circle(img, ref_pos, Const.ref_color())
-      ip.draw.Draw.circle(img, cap_pos, Const.cap_color())
 
   def get_plot(self):
-    img_scaled = cv2.resize(self.__plane, (0, 0), fx=self.__scaler, fy=self.__scaler)
-    self.__draw_samples(img_scaled)
-    img_math_view = cv2.flip(img_scaled, 0)
-    return img_math_view
+     print('size: ', self.__plane.shape[0], self.__plane.shape[1])
+     return self.__plane
 
 
 class GraphGenerator:
@@ -102,29 +87,37 @@ class GraphGenerator:
     print(Const.Symbols.delta() + 'L [average] : ', round(l_perc, 2), '%', sep='')
     print(Const.Symbols.delta() + 'S [average] : ', round(s_perc, 2), '%', sep='')
 
-    hs_plane = PlaneHS(self.__ref_color, self.__cap_color, 3)
+    hs_plane = PlaneHS(self.__ref_color, self.__cap_color, 1)
     img = hs_plane.get_plot()
+    
+    img_graph = img
 
-    img_graph = cv2.copyMakeBorder(
-        img,
-        top=10,
-        bottom=30,
-        left=10,
-        right=10,
-        borderType=cv2.BORDER_CONSTANT,
-        value=[231, 235, 239]
-    )
-    self.__label_x(img_graph, (350, 570), 'S [0-255]')
-    self.__label_y(img_graph, (10, 220), 'H [0-180]')
+    plt.ylim((0, 179))
+    plt.xlim(0, 254)
+    plt.xlabel('Saturation')
+    plt.ylabel('Hue')
 
-    ip.draw.Draw.circle(img_graph, (20, 20), Const.ref_color())
-    ip.draw.Draw.put_text(img_graph, (35, 25), 'Reference', 0.4)
+    plt.imshow(cv2.cvtColor(img_graph, cv2.COLOR_BGR2RGB))
+    x = np.arange(30)
+    plt.gca().invert_yaxis()
 
-    ip.draw.Draw.circle(img_graph, (20, 40), Const.cap_color())
-    ip.draw.Draw.put_text(img_graph, (35, 45), 'Captured', 0.4)
+    size = len(self.__ref_color.get()['channels']['h'])
 
-    cv2.imshow(window_name, img_graph)
-    show_window(window_name)
+    for i in range(0, size):
+      ref_channels = self.__ref_color.get()['channels']
+      cap_channels = self.__cap_color.get()['channels']
+
+      p1_x = ref_channels['s'][i]
+      p1_y = ref_channels['h'][i]
+
+      p2_x = cap_channels['s'][i]
+      p2_y = cap_channels['h'][i]
+
+      plt.plot([p1_x, p2_x], [p1_y, p2_y], color='black', linewidth=0.7)
+      plt.plot([p1_x, p1_x], [p1_y, p1_y], 'bs-', linewidth=0.3)
+      plt.plot([p2_x, p2_x], [p2_y, p2_y], 'ro-')
+
+    plt.show()
 
   @staticmethod
   def create(ref_json_filename, cap_json_filename):
