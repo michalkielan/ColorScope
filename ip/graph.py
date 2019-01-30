@@ -7,6 +7,7 @@ import ip.colorjson
 import ip.colormeter
 import matplotlib.pyplot as plt
 
+
 class Const:
   @staticmethod
   def ref_color():
@@ -32,6 +33,18 @@ def show_window(window_name):
   cv2.destroyAllWindows()
 
 
+class Plotter():
+  pass
+
+
+class PlotterHS():
+  pass
+
+
+class PlotterLum():
+  pass
+
+
 class PlaneHS:
   def __init__(self, ref_color_data, cap_color_data, scaler):
     self.__ref_color = ref_color_data
@@ -53,12 +66,7 @@ class PlaneHS:
         img_hls[y, x] = [h_channel, 128, s_channel]
     return img_hls
 
-  def __draw_samples(self, img):
-    size = len(self.__ref_color.get()['channels']['h'])
-
-
   def get_plot(self):
-     print('size: ', self.__plane.shape[0], self.__plane.shape[1])
      return self.__plane
 
 
@@ -89,16 +97,17 @@ class GraphGenerator:
 
     hs_plane = PlaneHS(self.__ref_color, self.__cap_color, 1)
     img = hs_plane.get_plot()
-    
+
     img_graph = img
 
     plt.ylim((0, 179))
     plt.xlim(0, 254)
+
+    plt.title('HS error graph')
     plt.xlabel('Saturation')
     plt.ylabel('Hue')
 
     plt.imshow(cv2.cvtColor(img_graph, cv2.COLOR_BGR2RGB))
-    x = np.arange(30)
     plt.gca().invert_yaxis()
 
     size = len(self.__ref_color.get()['channels']['h'])
@@ -107,15 +116,15 @@ class GraphGenerator:
       ref_channels = self.__ref_color.get()['channels']
       cap_channels = self.__cap_color.get()['channels']
 
-      p1_x = ref_channels['s'][i]
-      p1_y = ref_channels['h'][i]
+      ref_x = ref_channels['s'][i]
+      ref_y = ref_channels['h'][i]
 
-      p2_x = cap_channels['s'][i]
-      p2_y = cap_channels['h'][i]
+      cap_x = cap_channels['s'][i]
+      cap_y = cap_channels['h'][i]
 
-      plt.plot([p1_x, p2_x], [p1_y, p2_y], color='black', linewidth=0.7)
-      plt.plot([p1_x, p1_x], [p1_y, p1_y], 'bs-', linewidth=0.3)
-      plt.plot([p2_x, p2_x], [p2_y, p2_y], 'ro-')
+      plt.plot([ref_x, cap_x], [ref_y, cap_y], color='black', linewidth=0.7)
+      plt.plot([ref_x, ref_x], [ref_y, ref_y], 'bs-')
+      plt.plot([cap_x, cap_x], [cap_y, cap_y], 'ro-')
 
     plt.show()
 

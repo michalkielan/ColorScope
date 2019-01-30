@@ -9,6 +9,24 @@ import ip.colorjson
 import ip.colorreader
 import ip.graph
 
+import numpy as np
+import scipy.stats as stats
+import pylab as pl
+import cv2
+ 
+ 
+ img = cv2.imread(argv[1]) 
+ 
+ x = np.random.normal(size=100)
+ 
+ fit = stats.norm.pdf(x, np.mean(x), np.std(x))
+ 
+ pl.plot(x, fit, '-o')
+ 
+ pl.hist(x, normed=True)
+ 
+ pl.show()
+
 
 def parse_video_size_arg(video_size):
   if video_size != '':
@@ -74,6 +92,15 @@ def main():
       default=''
   )
 
+  
+  parser.add_argument(
+      '-dist',
+      '--distribution',
+      type=str,
+      help='distribution of image',
+      default=''
+  )
+
   args = parser.parse_args()
   pixel_format = args.pixel_format.lower()
   output_format = args.output_format.lower()
@@ -82,6 +109,7 @@ def main():
   img_file = args.imgfile
   out_json_file = args.out
   gen_graph_filenames = args.gen_graph
+  dist = args.dist
 
   if gen_graph_filenames != '':
     ref_json, cap_json = gen_graph_filenames
@@ -96,6 +124,9 @@ def main():
     sys.exit('File not found')
 
   image_loader = ip.imgloader.create(img_file, pixel_format, video_size)
+
+  if dist != '':
+    distribution = Distribution(image_loader)
 
   try:
     color_reader = ip.colorreader.create(

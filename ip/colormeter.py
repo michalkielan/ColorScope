@@ -2,6 +2,35 @@
 """Calculate color paramters"""
 
 import numpy as np
+import scipy.stats as stats
+import pylab as plt
+import cv2
+
+
+
+class Distribution:
+  def __init__(self, data):
+    self__.data = data
+
+  def __calc_flt(self)
+    fit = stats.norm.pdf(self.__data, np.mean(self.__data), np.std(self.__data))
+
+  def get_plot(self)
+    flt = self.__calt_flt()
+    plt.pltot(self.__data, fit, '-o')
+    plt.hist(self.__data, normed=True)
+    return plt
+
+class DistributionHSL:
+  def __init__(self, img)
+    self.__h = img[0]
+    self.__s = img[1]
+    self.__v = img[2]
+
+  def show_s_plot():
+    dist = 
+
+
 
 
 class ColorMeter:
