@@ -8,24 +8,7 @@ import ip.imgloader
 import ip.colorjson
 import ip.colorreader
 import ip.graph
-
-import numpy as np
-import scipy.stats as stats
-import pylab as pl
-import cv2
- 
- 
- img = cv2.imread(argv[1]) 
- 
- x = np.random.normal(size=100)
- 
- fit = stats.norm.pdf(x, np.mean(x), np.std(x))
- 
- pl.plot(x, fit, '-o')
- 
- pl.hist(x, normed=True)
- 
- pl.show()
+import ip.colormeter
 
 
 def parse_video_size_arg(video_size):
@@ -91,7 +74,6 @@ def main():
       nargs=2,
       default=''
   )
-
   
   parser.add_argument(
       '-dist',
@@ -109,7 +91,7 @@ def main():
   img_file = args.imgfile
   out_json_file = args.out
   gen_graph_filenames = args.gen_graph
-  dist = args.dist
+  dist = args.distribution
 
   if gen_graph_filenames != '':
     ref_json, cap_json = gen_graph_filenames
@@ -126,7 +108,11 @@ def main():
   image_loader = ip.imgloader.create(img_file, pixel_format, video_size)
 
   if dist != '':
-    distribution = Distribution(image_loader)
+    print ('Dist')
+    ds = ip.colormeter.DistributionHSL(image_loader.imread())
+    ds.show_s_plot()
+
+    sys.exit(0)
 
   try:
     color_reader = ip.colorreader.create(
