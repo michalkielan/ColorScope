@@ -2,13 +2,13 @@ import unittest
 import threading
 import os
 import sys
-import cv2
 import matplotlib.pyplot as plt
+from time import sleep
+from PIL import Image, ImageDraw
+import cv2
 import ip
 import colorscope
 
-from time import sleep
-from PIL import Image, ImageDraw
 
 def fake_xwindow_supported():
   if sys.platform == 'linux':
@@ -22,6 +22,11 @@ if fake_xwindow_supported():
 
 def is_windows():
   if sys.platform == 'win64' or sys.platform == 'win32':
+    return True
+  return False
+
+def is_travis():
+  if 'TRAVIS_TEST_ONLY' in os.environ:
     return True
   return False
 
@@ -45,7 +50,7 @@ class FakeMouse:
 class Resources:
   def __init__(self):
     size = (10, 10)
-    self.rect = [[1,1],[5,5]]
+    self.rect = [[1, 1], [5, 5]]
 
     if not is_windows():
       os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo -video_size 1280x720 -pixel_format nv12 -i /dev/urandom -vframes 1 raw_nv12_1280_720.yuv')
@@ -66,10 +71,10 @@ class Resources:
     self.black = 'black.png'
     self.white = 'white.png'
 
-    img_red = Image.new('RGB', size, (255, 0 ,0 ))
+    img_red = Image.new('RGB', size, (255, 0, 0))
     img_green = Image.new('RGB', size, (0, 255, 0))
     img_blue = Image.new('RGB', size, (0, 0, 255))
-    img_black = Image.new('RGB', size, (0, 0 ,0))
+    img_black = Image.new('RGB', size, (0, 0, 0))
     img_white = Image.new('RGB', size, (255, 255, 255))
 
     img_red.save(self.red)
@@ -112,7 +117,8 @@ class TestColorscope(unittest.TestCase):
 
   def make_fake_display(self, size):
     if fake_xwindow_supported():
-      fake_display = Xvfb(width = 1280, height = 720)
+      w, h = size
+      fake_display = Xvfb(width=w, height=h)
       return fake_display
     raise IOError('Fake xwindow not supported')
 
@@ -175,9 +181,9 @@ class TestColorscope(unittest.TestCase):
     if not is_windows():
       with self.assertRaises(ValueError):
         imloader = ip.imgloader.ImageLoader.create(
-                       self.res.raw_nv21_1920_1080,
-                       'nv21',
-                       [2000, 2000]
+            self.res.raw_nv21_1920_1080,
+            'nv21',
+            [2000, 2000]
         )
         ip.colorreader.ColorReader.create('rgb', imloader, '', '')
 
@@ -218,21 +224,21 @@ class TestColorscope(unittest.TestCase):
     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
     cr = ColorReaderRgbMock(img_loader, 'test.json')
     rgb = cr.read_rect_color(self.res.rect)
-    self.assertEqual(rgb , [255, 0, 0])
+    self.assertEqual(rgb, [255, 0, 0])
 
   def test_color_hsv_red(self):
     img_file = self.res.red
     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
     cr = ColorReaderHsvMock(img_loader, 'test.json')
     hsv = cr.read_rect_color(self.res.rect)
-    self.assertEqual(hsv , [0, 255, 255])
+    self.assertEqual(hsv, [0, 255, 255])
 
   def test_color_hls_red(self):
     img_file = self.res.red
     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
     cr = ColorReaderHlsMock(img_loader, 'test.json')
     hls = cr.read_rect_color(self.res.rect)
-    self.assertEqual(hls , [0, 128, 255])
+    self.assertEqual(hls, [0, 128, 255])
 
   def test_color_yuv_red(self):
     img_file = self.res.red
@@ -245,34 +251,34 @@ class TestColorscope(unittest.TestCase):
     img_file = self.res.red
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [255, 0, 0])
+    self.assertEqual([b, g, r], [255, 0, 0])
 
   def test_color_filter_average_red(self):
     img_file = self.res.red
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [255, 0, 0])
+    self.assertEqual([b, g, r], [255, 0, 0])
 
   def test_color_rgb_green(self):
-     img_file = self.res.green
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader, 'test.json')
-     rgb = cr.read_rect_color(self.res.rect)
-     self.assertEqual(rgb , [0, 255, 0])
+    img_file = self.res.green
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderRgbMock(img_loader, 'test.json')
+    rgb = cr.read_rect_color(self.res.rect)
+    self.assertEqual(rgb, [0, 255, 0])
 
   def test_color_hsv_green(self):
-     img_file = self.res.green
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader, 'test.json')
-     hsv = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hsv , [60, 255, 255])
+    img_file = self.res.green
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHsvMock(img_loader, 'test.json')
+    hsv = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hsv, [60, 255, 255])
 
   def test_color_hls_green(self):
-     img_file = self.res.green
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader, 'test.json')
-     hls = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hls , [60, 128, 255])
+    img_file = self.res.green
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHlsMock(img_loader, 'test.json')
+    hls = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hls, [60, 128, 255])
 
   def test_color_yuv_green(self):
     img_file = self.res.green
@@ -285,34 +291,34 @@ class TestColorscope(unittest.TestCase):
     img_file = self.res.green
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [0, 255, 0])
+    self.assertEqual([b, g, r], [0, 255, 0])
 
   def test_color_filter_average_green(self):
     img_file = self.res.green
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [0, 255, 0])
+    self.assertEqual([b, g, r], [0, 255, 0])
 
   def test_color_rgb_blue(self):
-     img_file = self.res.blue
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader, 'test.json')
-     rgb = cr.read_rect_color(self.res.rect)
-     self.assertEqual(rgb , [0, 0, 255])
+    img_file = self.res.blue
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderRgbMock(img_loader, 'test.json')
+    rgb = cr.read_rect_color(self.res.rect)
+    self.assertEqual(rgb, [0, 0, 255])
 
   def test_color_hsv_blue(self):
-     img_file = self.res.blue
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader, 'test.json')
-     hsv = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hsv , [120, 255, 255])
+    img_file = self.res.blue
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHsvMock(img_loader, 'test.json')
+    hsv = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hsv, [120, 255, 255])
 
   def test_color_hls_blue(self):
-     img_file = self.res.blue
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader, 'test.json')
-     hls = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hls, [120, 128, 255])
+    img_file = self.res.blue
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHlsMock(img_loader, 'test.json')
+    hls = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hls, [120, 128, 255])
 
   def test_color_yuv_blue(self):
     img_file = self.res.blue
@@ -325,34 +331,34 @@ class TestColorscope(unittest.TestCase):
     img_file = self.res.blue
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [0, 0, 255])
+    self.assertEqual([b, g, r], [0, 0, 255])
 
   def test_color_filter_average_blue(self):
     img_file = self.res.blue
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [0, 0, 255])
+    self.assertEqual([b, g, r], [0, 0, 255])
 
   def test_color_rgb_black(self):
-     img_file = self.res.black
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader, 'test.json')
-     rgb = cr.read_rect_color(self.res.rect)
-     self.assertEqual(rgb , [0, 0, 0])
+    img_file = self.res.black
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderRgbMock(img_loader, 'test.json')
+    rgb = cr.read_rect_color(self.res.rect)
+    self.assertEqual(rgb, [0, 0, 0])
 
   def test_color_hsv_black(self):
-     img_file = self.res.black
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader, 'test.json')
-     hsv = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hsv , [0, 0, 0])
+    img_file = self.res.black
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHsvMock(img_loader, 'test.json')
+    hsv = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hsv, [0, 0, 0])
 
   def test_color_hls_black(self):
-     img_file = self.res.black
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader, 'test.json')
-     hls = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hls , [0, 0, 0])
+    img_file = self.res.black
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHlsMock(img_loader, 'test.json')
+    hls = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hls, [0, 0, 0])
 
   def test_color_yuv_black(self):
     img_file = self.res.black
@@ -365,34 +371,34 @@ class TestColorscope(unittest.TestCase):
     img_file = self.res.black
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [0, 0, 0])
+    self.assertEqual([b, g, r], [0, 0, 0])
 
   def test_color_filter_average_black(self):
     img_file = self.res.black
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [0, 0, 0])
+    self.assertEqual([b, g, r], [0, 0, 0])
 
   def test_color_rgb_white(self):
-     img_file = self.res.white
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderRgbMock(img_loader, 'test.json')
-     rgb = cr.read_rect_color(self.res.rect)
-     self.assertEqual(rgb , [255, 255, 255])
+    img_file = self.res.white
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderRgbMock(img_loader, 'test.json')
+    rgb = cr.read_rect_color(self.res.rect)
+    self.assertEqual(rgb, [255, 255, 255])
 
   def test_color_hsv_white(self):
-     img_file = self.res.white
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHsvMock(img_loader, 'test.json')
-     hsv = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hsv, [0, 0, 255])
+    img_file = self.res.white
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHsvMock(img_loader, 'test.json')
+    hsv = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hsv, [0, 0, 255])
 
   def test_color_hls_white(self):
-     img_file = self.res.white
-     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
-     cr = ColorReaderHlsMock(img_loader, 'test.json')
-     hls = cr.read_rect_color(self.res.rect)
-     self.assertEqual(hls, [0, 255, 0])
+    img_file = self.res.white
+    img_loader = ip.imgloader.ImageLoaderDefault(img_file)
+    cr = ColorReaderHlsMock(img_loader, 'test.json')
+    hls = cr.read_rect_color(self.res.rect)
+    self.assertEqual(hls, [0, 255, 0])
 
   def test_color_yuv_white(self):
     img_file = self.res.white
@@ -405,13 +411,13 @@ class TestColorscope(unittest.TestCase):
     img_file = self.res.white
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [255, 255, 255])
+    self.assertEqual([b, g, r], [255, 255, 255])
 
   def test_color_filter_average_white(self):
     img_file = self.res.white
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
     r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r] , [255, 255, 255])
+    self.assertEqual([b, g, r], [255, 255, 255])
 
   def test_json_rgb(self):
     json_filename = 'rgb_json.json'
@@ -572,14 +578,14 @@ class TestColorscope(unittest.TestCase):
     except IOError:
       pass
 
-  def stop_gui(self, timeout, fake_display):
+  def stop_gui(self, timeout):
     sleep(timeout)
     plt.ioff()
     plt.close("all")
 
   def test_gui_plot(self):
     try:
-      if 'TRAVIS_TEST_ONLY' in os.environ:
+      if is_travis():
         fake_display = self.make_fake_display((1280, 720))
         fake_display.start()
         ref_filename = 'graph_tests_ref_json.json'
@@ -588,16 +594,16 @@ class TestColorscope(unittest.TestCase):
         ref_cj.append([10, 10, 10])
         ref_cj.append([10, 10, 10])
         ref_cj.write()
-  
+
         cap_filename = 'graph_tests_cap_json.json'
         cap_cj = ip.colorjson.JsonSerializerHLS(cap_filename)
         cap_cj.append([20, 20, 20])
         cap_cj.append([20, 20, 20])
         cap_cj.append([20, 20, 20])
         cap_cj.write()
-  
+
         timeout = 3
-        closer = threading.Thread(target=self.stop_gui, args=[timeout, fake_display])
+        closer = threading.Thread(target=self.stop_gui, args=[timeout])
         closer.start()
         graph_hs = ip.graph.GraphHS(ref_filename, cap_filename)
         graph_hs.show()
