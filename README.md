@@ -13,7 +13,7 @@ $ sudo pip install opencv-python
 ```
 
 ## Usage
-Output format supported: rgb, yuv, hsv, hls
+Output format supported: `rgb`, `yuv`, `hsv`, `hls`
 
 ```
 $ ./colorscope.py -i image.jpeg -out_fmt=rgb
@@ -26,4 +26,11 @@ R      G      B
 Raw input images
 ```
 $ ./colorscope.py -i image.yuv -pix_fmt=nv21 -s 640x480 -out_fmt=rgb
+```
+
+Measure and plot data
+```
+$ ./colorscope.py -i reference.jpeg -out_fmt=hls -o ref.json
+$ ./colorscope.py -i capture.jpeg -out_fmt=hls -o cap.json
+$ ./colorscope.py -gen ref.json cap.json
 ```

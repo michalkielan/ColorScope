@@ -9,8 +9,11 @@ ChangeLog
  - gui tests
  - roi instead of single pixel
  - raw input yuv image support
- - add arg for filtering type (avg, med)
- - add output hsv, hls support
+ - arg for filtering type (avg, med)
+ - output hsv, hls support
+ - output json file
+ - graphs: HS
+ - img factors h,l and s difference in [%]
 
 ### Changed
  - arg parser

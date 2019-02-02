@@ -18,8 +18,7 @@ install:
 
 script:
   - pylint colorscope.py ip/*
-  - pytest --cov-report term --cov-branch --cov=ip tst_colorscope.py
-
+  - TRAVIS_TEST_ONLY=1 pytest --cov-report term --cov-branch --cov=ip tst_colorscope.py
 
 after_success:
   - coveralls

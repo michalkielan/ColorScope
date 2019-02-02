@@ -27,3 +27,25 @@ class RectDrawer:
     self.__is_draw = False
     cv2.rectangle(self.__img, self.__start_pos, pos, self.__color, 1)
     cv2.imshow(self.__window, self.__img)
+
+
+class Draw:
+  @staticmethod
+  def circle(img, pos, bgr):
+    circle_rad = 6
+    cv2.circle(img, pos, circle_rad, bgr, -1)
+    cv2.circle(img, pos, circle_rad, (0, 0, 0), 1)
+
+  @staticmethod
+  def line(img, point1, point2, bgr):
+    cv2.line(img, point1, point2, bgr, thickness=1, lineType=8, shift=0)
+
+  @staticmethod
+  def rect(img, pos, bgr):
+    circle_rad = 3
+    cv2.circle(img, pos, circle_rad, bgr, -1)
+    cv2.circle(img, pos, circle_rad, (0, 0, 0), 1)
+
+  @staticmethod
+  def put_text(img, pos, text, size):
+    cv2.putText(img, text, pos, cv2.FONT_HERSHEY_SIMPLEX, size, 0)

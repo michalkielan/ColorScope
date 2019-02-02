@@ -4,7 +4,9 @@
 import abc
 import cv2
 import ip.colorfilter
+import ip.colorjson
 import ip.draw
+import ip.graph
 
 
 class ColorReader(metaclass=abc.ABCMeta):
@@ -19,6 +21,7 @@ class ColorReader(metaclass=abc.ABCMeta):
     self._img_mark = self._img.copy()
     self.__drawer = ip.draw.RectDrawer(self.__window, self._img, rect_color)
     self.__rect = [[0, 0], [0, 0]]
+    self._color_json = None
 
   @abc.abstractmethod
   def _get_color_format(self, img_roi):
@@ -49,36 +52,32 @@ class ColorReader(metaclass=abc.ABCMeta):
       self.__rect[1] = [x, y]
       if self.__rect[0] != self.__rect[1]:
         color = self.read_rect_color(self.__rect)
+        self._color_json.append(color)
         print('\t'.join(map(str, color)))
 
   def processing(self):
     cv2.imshow(self.__window, self._img)
     cv2.setMouseCallback(self.__window, self.__on_mouse_event)
-    while True:
-      pressedkey = cv2.waitKey(100)
-      if pressedkey == 27 or pressedkey == ord('q'):
-        cv2.destroyAllWindows()
-        break
-      if cv2.getWindowProperty(self.__window, cv2.WND_PROP_VISIBLE) < 1:
-        break
-    cv2.destroyAllWindows()
+    ip.graph.show_window(self.__window)
+    self._color_json.write()
 
   @staticmethod
-  def create(color_format, image_loader, filter_type):
+  def create(color_format, image_loader, filter_type, out_json_filename):
     if color_format == 'rgb':
-      return ColorReaderRGB(image_loader, filter_type)
+      return ColorReaderRGB(image_loader, out_json_filename, filter_type)
     if color_format == 'yuv':
-      return ColorReaderYUV(image_loader, filter_type)
+      return ColorReaderYUV(image_loader, out_json_filename, filter_type)
     if color_format == 'hsv':
-      return ColorReaderHSV(image_loader, filter_type)
+      return ColorReaderHSV(image_loader, out_json_filename, filter_type)
     if color_format == 'hls':
-      return ColorReaderHLS(image_loader, filter_type)
+      return ColorReaderHLS(image_loader, out_json_filename, filter_type)
     raise AttributeError('make_color_reader: ' + color_format + ' not found')
 
 
 class ColorReaderRGB(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ip.colorjson.JsonSerializerRGB(json_filename)
     print('R', 'G', 'B', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -86,8 +85,9 @@ class ColorReaderRGB(ColorReader):
 
 
 class ColorReaderYUV(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ip.colorjson.JsonSerializerYUV(json_filename)
     print('Y', 'U', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -95,8 +95,9 @@ class ColorReaderYUV(ColorReader):
 
 
 class ColorReaderHSV(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ip.colorjson.JsonSerializerHSV(json_filename)
     print('H', 'S', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -104,13 +105,19 @@ class ColorReaderHSV(ColorReader):
 
 
 class ColorReaderHLS(ColorReader):
-  def __init__(self, filename, filter_type='avg'):
+  def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
+    self._color_json = ip.colorjson.JsonSerializerHLS(json_filename)
     print('H', 'L', 'S', sep='\t')
 
   def _get_color_format(self, img_roi):
     return cv2.cvtColor(img_roi, cv2.COLOR_BGR2HLS)
 
 
-def create(color_format, img_loader, filter_type):
-  return ColorReader.create(color_format, img_loader, filter_type)
+def create(color_format, img_loader, filter_type, out_json_filename):
+  return ColorReader.create(
+      color_format,
+      img_loader,
+      filter_type,
+      out_json_filename
+  )
