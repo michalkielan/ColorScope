@@ -4,12 +4,7 @@ import os
 import sys
 import cv2
 import matplotlib.pyplot as plt
-import ip.colorreader
-import ip.imgloader
-import ip.draw
-import ip.colorfilter
-import ip.colorjson
-import ip.graph
+import ip
 import colorscope
 
 from time import sleep
