@@ -52,18 +52,46 @@ class Resources:
     self.rect = [[1, 1], [5, 5]]
 
     if not is_windows():
-      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo\
-          -video_size 1280x720 -pixel_format nv12 -i /dev/urandom\
-          -vframes 1 raw_nv12_1280_720.yuv')
-      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo\
-          -video_size 1280x720 -pixel_format nv21 -i /dev/urandom\
-          -vframes 1 raw_nv21_1280_720.yuv')
-      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo\
-          -video_size 1920x1080 -pixel_format nv12 -i /dev/urandom\
-          -vframes 1 raw_nv12_1920_1080.yuv')
-      os.system('ffmpeg -y -nostats -loglevel 0 -f rawvideo\
-          -video_size 1920x1080 -pixel_format nv21 -i /dev/urandom\
-          -vframes 1 raw_nv21_1920_1080.yuv')
+      os.system(
+          'ffmpeg -y \
+          -nostats -loglevel 0 \
+          -f rawvideo \
+          -video_size 1280x720
+          -pixel_format nv12 \
+          -i /dev/urandom \
+          -vframes 1 \
+          raw_nv12_1280_720.yuv'
+      )
+      os.system(
+          'ffmpeg -y \
+          -nostats -loglevel 0 \
+          -f rawvideo \
+          -video_size 1280x720 \
+          -pixel_format nv21 \
+          -i /dev/urandom \
+          -vframes 1 \
+          raw_nv21_1280_720.yuv'
+      )
+      os.system(
+         'ffmpeg -y \
+          -nostats -loglevel 0 \
+          -f rawvideo \
+          -video_size 1920x1080 \
+          -pixel_format nv12 \
+          -i /dev/urandom \
+          -vframes 1 \
+          raw_nv12_1920_1080.yuv'
+      )
+      os.system(
+          'ffmpeg -y \
+          -nostats -loglevel 0 \
+          -f rawvideo \
+          -video_size 1920x1080 \
+          -pixel_format nv21 \
+          -i /dev/urandom \
+          -vframes 1 \
+          raw_nv21_1920_1080.yuv'
+      )
 
       self.raw_nv12_1920_1080 = 'raw_nv12_1920_1080.yuv'
       self.raw_nv21_1920_1080 = 'raw_nv21_1920_1080.yuv'
@@ -214,7 +242,10 @@ class TestColorscope(unittest.TestCase):
 
   def test_img_loader_nv12_1080p(self):
     if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV12(self.res.raw_nv12_1920_1080, [1920, 1080])
+      imloader = ip.imgloader.ImageLoaderRawNV12(
+          self.res.raw_nv12_1920_1080,
+          (1920, 1080)
+      )
       img = imloader.imread()
       h, w, channels = img.shape
       self.assertEqual([1080, 1920], [h, w])
@@ -222,7 +253,10 @@ class TestColorscope(unittest.TestCase):
 
   def test_img_loader_nv12_720p(self):
     if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV12(self.res.raw_nv12_1280_720, [1280, 720])
+      imloader = ip.imgloader.ImageLoaderRawNV12(
+          self.res.raw_nv12_1280_720,
+          (1280, 720)
+      )
       img = imloader.imread()
       h, w, channels = img.shape
       self.assertEqual([720, 1280], [h, w])
@@ -230,7 +264,10 @@ class TestColorscope(unittest.TestCase):
 
   def test_img_loader_nv21_1080p(self):
     if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV21(self.res.raw_nv21_1920_1080, [1920, 1080])
+      imloader = ip.imgloader.ImageLoaderRawNV21(
+          self.res.raw_nv21_1920_1080,
+          (1920, 1080)
+      )
       img = imloader.imread()
       h, w, channels = img.shape
       self.assertEqual([1080, 1920], [h, w])
@@ -238,7 +275,10 @@ class TestColorscope(unittest.TestCase):
 
   def test_img_loader_nv21_720p(self):
     if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV21(self.res.raw_nv21_1280_720, [1280, 720])
+      imloader = ip.imgloader.ImageLoaderRawNV21(
+          self.res.raw_nv21_1280_720,
+          (1280, 720)
+      )
       img = imloader.imread()
       h, w, channels = img.shape
       self.assertEqual([720, 1280], [h, w])
