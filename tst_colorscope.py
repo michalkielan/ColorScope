@@ -425,32 +425,6 @@ class TestColorReader(unittest.TestCase):
     yuv = crm.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [255, 128, 128])
 
-  @staticmethod
-  def close_window():
-    if fake_xwindow_supported():
-      fake_mouse = FakeMouse()
-      fake_keyboard = FakeKeyboard()
-      start_pos = [50, 50]
-      timeout = 3
-      x, y = start_pos
-
-      sleep(timeout)
-      fake_mouse.click(x, y)
-      fake_keyboard.tap_esc()
-
-  def test_gui_open_close(self):
-    try:
-      fake_display = make_fake_display((1280, 720))
-      fake_display.start()
-      closer = threading.Thread(target=self.close_window)
-      closer.start()
-      image_loader = ip.imgloader.ImageLoaderDefault(self.res.red)
-      cr_rgb = ip.colorreader.ColorReaderRGB(image_loader, 'test.json')
-      cr_rgb.processing()
-      closer.join()
-      fake_display.stop()
-    except IOError:
-      pass
 
 
 class TestColorFilter(unittest.TestCase):
@@ -528,40 +502,6 @@ class TestGraph(unittest.TestCase):
     self.assertEqual(ip.graph.Const.get_max_lightness(), 255)
     self.assertEqual(ip.graph.Const.Symbols.delta(), '\u0394')
 
-  @staticmethod
-  def stop_gui(timeout):
-    sleep(timeout)
-    plt.ioff()
-    plt.close("all")
-
-  def test_gui_plot(self):
-    try:
-      if is_travis():
-        fake_display = make_fake_display((1280, 720))
-        fake_display.start()
-        ref_filename = 'graph_tests_ref_json.json'
-        ref_jss = ip.colorjson.JsonSerializerHLS(ref_filename)
-        ref_jss.append([10, 10, 10])
-        ref_jss.append([10, 10, 10])
-        ref_jss.append([10, 10, 10])
-        ref_jss.write()
-
-        cap_filename = 'graph_tests_cap_json.json'
-        cap_jss = ip.colorjson.JsonSerializerHLS(cap_filename)
-        cap_jss.append([20, 20, 20])
-        cap_jss.append([20, 20, 20])
-        cap_jss.append([20, 20, 20])
-        cap_jss.write()
-
-        timeout = 3
-        closer = threading.Thread(target=self.stop_gui, args=[timeout])
-        closer.start()
-        graph_hs = ip.graph.GraphHS(ref_filename, cap_filename)
-        graph_hs.show()
-        closer.join()
-        fake_display.stop()
-    except IOError:
-      pass
 
 class TestColorJson(unittest.TestCase):
   def setUp(self):
@@ -709,7 +649,7 @@ class TestColorMeter(unittest.TestCase):
     os.remove(cap_hsv_filename)
 
 
-class TestRectDrawer(unittest.TestCase):
+class TestGui(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
     self.fake_gui_enabled = False
@@ -721,7 +661,57 @@ class TestRectDrawer(unittest.TestCase):
     except IOError:
       pass
 
-  def test_draw_rect(self):
+  def close_window(self):
+    if self.fake_gui_enabled:
+      fake_mouse = FakeMouse()
+      fake_keyboard = FakeKeyboard()
+      start_pos = [50, 50]
+      timeout = 3
+      x, y = start_pos
+
+      sleep(timeout)
+      fake_mouse.click(x, y)
+      fake_keyboard.tap_esc()
+  def gui_open_close_tst(self):
+    if self.fake_gui_enabled:
+      closer = threading.Thread(target=self.close_window)
+      closer.start()
+      image_loader = ip.imgloader.ImageLoaderDefault(self.res.red)
+      cr_rgb = ip.colorreader.ColorReaderRGB(image_loader, 'test.json')
+      cr_rgb.processing()
+      closer.join()
+
+  @staticmethod
+  def stop_gui(timeout):
+    sleep(timeout)
+    plt.ioff()
+    plt.close("all")
+
+  def gui_plot(self):
+    if self.fake_gui_enabled:
+      if is_travis():
+        ref_filename = 'graph_tests_ref_json.json'
+        ref_jss = ip.colorjson.JsonSerializerHLS(ref_filename)
+        ref_jss.append([10, 10, 10])
+        ref_jss.append([10, 10, 10])
+        ref_jss.append([10, 10, 10])
+        ref_jss.write()
+
+        cap_filename = 'graph_tests_cap_json.json'
+        cap_jss = ip.colorjson.JsonSerializerHLS(cap_filename)
+        cap_jss.append([20, 20, 20])
+        cap_jss.append([20, 20, 20])
+        cap_jss.append([20, 20, 20])
+        cap_jss.write()
+
+        timeout = 3
+        closer = threading.Thread(target=self.stop_gui, args=[timeout])
+        closer.start()
+        graph_hs = ip.graph.GraphHS(ref_filename, cap_filename)
+        graph_hs.show()
+        closer.join()
+
+  def draw_rect(self):
     if self.fake_gui_enabled:
       color_background = (20, 20, 20)
       color_rect = [0, 0, 255]
@@ -734,60 +724,65 @@ class TestRectDrawer(unittest.TestCase):
       rect_drawer = ip.draw.RectDrawer(window, img, color_rect)
       rect_drawer.start((10, 10))
       rect_drawer.end((14, 14))
-  
+
       self.assertEqual(img[10][10][0], color_rect[0])
       self.assertEqual(img[10][10][1], color_rect[1])
       self.assertEqual(img[10][10][2], color_rect[2])
-  
+
       self.assertEqual(img[14][14][0], color_rect[0])
       self.assertEqual(img[14][14][1], color_rect[1])
       self.assertEqual(img[14][14][2], color_rect[2])
-  
+
       self.assertEqual(img[13][13][0], color_background[0])
       self.assertEqual(img[13][13][1], color_background[1])
       self.assertEqual(img[13][13][2], color_background[2])
-  
+
       rect_drawer.start((20, 20))
       rect_drawer.end((18, 18))
-  
+
       self.assertEqual(img[20][20][0], color_rect[0])
       self.assertEqual(img[20][20][1], color_rect[1])
       self.assertEqual(img[20][20][2], color_rect[2])
-  
+
       self.assertEqual(img[18][18][0], color_rect[0])
       self.assertEqual(img[18][18][1], color_rect[1])
       self.assertEqual(img[18][18][2], color_rect[2])
-  
+
       self.assertEqual(img[17][17][0], color_background[0])
       self.assertEqual(img[17][17][1], color_background[1])
       self.assertEqual(img[17][17][2], color_background[2])
-  
+
       rect_drawer.start((30, 30))
       rect_drawer.end((40, 20))
-  
+
       self.assertEqual(img[30][30][0], color_rect[0])
       self.assertEqual(img[30][30][1], color_rect[1])
       self.assertEqual(img[30][30][2], color_rect[2])
-  
+
       self.assertEqual(img[20][40][0], color_rect[0])
       self.assertEqual(img[20][40][1], color_rect[1])
       self.assertEqual(img[20][40][2], color_rect[2])
-  
+
       self.assertEqual(img[17][17][0], color_background[0])
       self.assertEqual(img[17][17][1], color_background[1])
       self.assertEqual(img[17][17][2], color_background[2])
-  
+
       rect_drawer.start((160, 160))
       rect_drawer.end((50, 70))
-  
+
       self.assertEqual(img[160][160][0], color_rect[0])
       self.assertEqual(img[160][160][1], color_rect[1])
       self.assertEqual(img[160][160][2], color_rect[2])
-  
+
       self.assertEqual(img[70][50][0], color_rect[0])
       self.assertEqual(img[70][50][1], color_rect[1])
       self.assertEqual(img[70][50][2], color_rect[2])
       cv2.destroyAllWindows()
+
+  def test_gui(self):
+    self.draw_rect()
+    self.gui_plot()
+    self.gui_open_close_tst()
 
 
 class TestColorscope(unittest.TestCase):
