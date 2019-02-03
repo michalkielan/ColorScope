@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import cv2
 import ip
+# pylint: disable=unused-import
 import colorscope
 
 def fake_xwindow_supported():
@@ -55,6 +56,7 @@ def make_fake_display(size):
 
 
 class Resources:
+  # pylint: disable=too-many-instance-attributes
   def __init__(self):
     size = (10, 10)
     self.rect = [[1, 1], [5, 5]]
@@ -134,23 +136,27 @@ class Resources:
 
 
 class ColorReaderRgbMock(ip.colorreader.ColorReaderRGB):
+  # pylint: disable=useless-super-delegation
   def read_rect_color(self, rect):
     return super().read_rect_color(rect)
 
 
 class ColorReaderYuvMock(ip.colorreader.ColorReaderYUV):
-  def read_rect_color(self, pos):
-    return super().read_rect_color(pos)
+  # pylint: disable=useless-super-delegation
+  def read_rect_color(self, rect):
+    return super().read_rect_color(rect)
 
 
 class ColorReaderHsvMock(ip.colorreader.ColorReaderHSV):
-  def read_rect_color(self, pos):
-    return super().read_rect_color(pos)
+  # pylint: disable=useless-super-delegation
+  def read_rect_color(self, rect):
+    return super().read_rect_color(rect)
 
 
 class ColorReaderHlsMock(ip.colorreader.ColorReaderHLS):
-  def read_rect_color(self, pos):
-    return super().read_rect_color(pos)
+  # pylint: disable=useless-super-delegation
+  def read_rect_color(self, rect):
+    return super().read_rect_color(rect)
 
 
 class TestImgLoader(unittest.TestCase):
@@ -255,6 +261,7 @@ class TestImgLoader(unittest.TestCase):
       self.assertEqual(3, channels)
 
 
+# pylint: disable=too-many-public-methods
 class TestColorReader(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
@@ -282,6 +289,8 @@ class TestColorReader(unittest.TestCase):
     del cr_hls
 
     with self.assertRaises(TypeError):
+      # pylint: disable=abstract-class-instantiated
+      # pylint: disable=no-value-for-parameter
       cr_inv = ip.colorreader.ColorReader(imloader)
       del cr_inv
 
@@ -434,60 +443,70 @@ class TestColorFilter(unittest.TestCase):
   def test_color_filter_median_red(self):
     img_file = self.res.red
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [255, 0, 0])
 
   def test_color_filter_average_red(self):
     img_file = self.res.red
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [255, 0, 0])
 
   def test_color_filter_median_green(self):
     img_file = self.res.green
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [0, 255, 0])
 
   def test_color_filter_average_green(self):
     img_file = self.res.green
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [0, 255, 0])
 
   def test_color_filter_median_blue(self):
     img_file = self.res.blue
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [0, 0, 255])
 
   def test_color_filter_average_blue(self):
     img_file = self.res.blue
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [0, 0, 255])
 
   def test_color_filter_median_black(self):
     img_file = self.res.black
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [0, 0, 0])
 
   def test_color_filter_average_black(self):
     img_file = self.res.black
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [0, 0, 0])
 
   def test_color_filter_median_white(self):
     img_file = self.res.white
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [255, 255, 255])
 
   def test_color_filter_average_white(self):
     img_file = self.res.white
     color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    # pylint: disable=unbalanced-tuple-unpacking
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [255, 255, 255])
 
@@ -711,6 +730,7 @@ class TestGui(unittest.TestCase):
         graph_hs.show()
         closer.join()
 
+  # pylint: disable=too-many-statements
   def draw_rect(self):
     if self.fake_gui_enabled:
       color_background = (20, 20, 20)
