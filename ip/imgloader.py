@@ -12,7 +12,7 @@ class ImageLoader(metaclass=abc.ABCMeta):
     pass
 
   @staticmethod
-  def create(img_filename, pixel_format, size):
+  def create(img_filename, pixel_format='', size=None):
     if pixel_format == 'nv21':
       return ImageLoaderRawNV21(img_filename, size)
     if pixel_format == 'nv12':

@@ -149,23 +149,39 @@ class TestColorscope(unittest.TestCase):
     with self.assertRaises(TypeError):
       csINV = ip.colorreader.ColorReader(imloader)
 
-  def test_image_loader_factory_nv12(self):
+  def test_img_loader_factory_failed(self):
+    with self.assertRaises(AttributeError):
+      imloader = ip.imgloader.ImageLoader.create(
+          self.res.red,
+          'invalid',
+          (0, 0)
+      )
+
+  def test_img_loader_factory_nv12(self):
     if not is_windows():
-      imloader = ip.imgloader.ImageLoader.create(self.res.raw_nv12_1920_1080, 'nv12', [1920, 1080])
+      imloader = ip.imgloader.ImageLoader.create(
+          self.res.raw_nv12_1920_1080,
+          'nv12',
+          (1920, 1080)
+      )
       img = imloader.imread()
       h, w, channels = img.shape
       self.assertEqual([1080, 1920], [h, w])
       self.assertEqual(3, channels)
 
-  def test_image_loader_factory_nv21(self):
+  def test_img_loader_factory_nv21(self):
     if not is_windows():
-      imloader = ip.imgloader.ImageLoader.create(self.res.raw_nv21_1920_1080, 'nv21', [1920, 1080])
+      imloader = ip.imgloader.ImageLoader.create(
+          self.res.raw_nv21_1920_1080,
+          'nv21',
+          (1920, 1080)
+      )
       img = imloader.imread()
       h, w, channels = img.shape
       self.assertEqual([1080, 1920], [h, w])
       self.assertEqual(3, channels)
 
-  def test_image_loader_factory_default(self):
+  def test_img_loader_factory_default(self):
     if not is_windows():
       imloader = ip.imgloader.create(self.res.red)
       img = imloader.imread()
@@ -173,21 +189,25 @@ class TestColorscope(unittest.TestCase):
       self.assertEqual([10, 10], [h, w])
       self.assertEqual(3, channels)
 
-  def test_image_loader_factory_failed(self):
+  def test_img_loader_factory_failed(self):
     with self.assertRaises(AttributeError):
-      imloader = ip.imgloader.ImageLoaderCreate('', 'invalid', [1280, 720])
+      imloader = ip.imgloader.ImageLoaderCreate(
+          '',
+          'invalid',
+          (1280, 720)
+      )
 
-  def test_image_loader_factory_wrong_size(self):
+  def test_img_loader_factory_wrong_size(self):
     if not is_windows():
       with self.assertRaises(ValueError):
         imloader = ip.imgloader.ImageLoader.create(
             self.res.raw_nv21_1920_1080,
             'nv21',
-            [2000, 2000]
+            (2000, 2000)
         )
         ip.colorreader.ColorReader.create('rgb', imloader, '', '')
 
-  def test_image_loader_nv12_1080p(self):
+  def test_img_loader_nv12_1080p(self):
     if not is_windows():
       imloader = ip.imgloader.ImageLoaderRawNV12(self.res.raw_nv12_1920_1080, [1920, 1080])
       img = imloader.imread()
@@ -195,7 +215,7 @@ class TestColorscope(unittest.TestCase):
       self.assertEqual([1080, 1920], [h, w])
       self.assertEqual(3, channels)
 
-  def test_image_loader_nv12_720p(self):
+  def test_img_loader_nv12_720p(self):
     if not is_windows():
       imloader = ip.imgloader.ImageLoaderRawNV12(self.res.raw_nv12_1280_720, [1280, 720])
       img = imloader.imread()
@@ -203,7 +223,7 @@ class TestColorscope(unittest.TestCase):
       self.assertEqual([720, 1280], [h, w])
       self.assertEqual(3, channels)
 
-  def test_image_loader_nv21_1080p(self):
+  def test_img_loader_nv21_1080p(self):
     if not is_windows():
       imloader = ip.imgloader.ImageLoaderRawNV21(self.res.raw_nv21_1920_1080, [1920, 1080])
       img = imloader.imread()
@@ -211,7 +231,7 @@ class TestColorscope(unittest.TestCase):
       self.assertEqual([1080, 1920], [h, w])
       self.assertEqual(3, channels)
 
-  def test_image_loader_nv21_720p(self):
+  def test_img_loader_nv21_720p(self):
     if not is_windows():
       imloader = ip.imgloader.ImageLoaderRawNV21(self.res.raw_nv21_1280_720, [1280, 720])
       img = imloader.imread()
