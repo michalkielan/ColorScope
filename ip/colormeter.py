@@ -10,7 +10,8 @@ class ColorMeter:
     self.__cap_color = cap_color
 
   def get_hls_delta_perc(self):
-    if self.__ref_color.get()['format'] != 'hls' or self.__cap_color.get()['format'] != 'hls':
+    if (self.__ref_color.get()['format'] != 'hls' or
+        self.__cap_color.get()['format'] != 'hls'):
       raise AttributeError('Color not HLS type')
 
     cap_channels = self.__cap_color.get()['channels']
