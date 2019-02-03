@@ -33,19 +33,24 @@ class ImageLoaderDefault(ImageLoader):
 class ImageLoaderRawNV21(ImageLoader):
   def __init__(self, filename, size):
     self.__filename = filename
-    width, height = size
-    self.__frame_len = width * height * 3 / 2
+    self.__width, self.__height = size
+    self.__frame_len = self.__width * self.__height * 3 / 2
     self.__img_file = open(filename, 'rb')
-    self.__shape = (int(height * 1.5), width)
+    self.__shape = (int(self.__height * 1.5), self.__width)
 
-  def get_y(self):
+  def get_buf_y(self):
     size = self.__height * self.__width
     buf = np.fromfile(self.__filename, dtype=np.uint8)
-    y_len = size * 12 * 2/3 /8
-#    raw_y[]
-#    for i in range (0, y_len)
-#      raw_y.append(buf[i])
-    return [buf[i] for in range(0, y_len)]
+    y_len = int(size * 12 * 2/3 /8)
+    return buf[0: y_len]
+
+  def get_buf_u(self):
+    u = self.imread()[:, :, 1]
+    return u.ravel()
+
+  def get_bug_v(self):
+    v = self.imread()[:, :, 2]
+    return v.ravel()
 
   def _read_raw(self):
     raw = self.__img_file.read(int(self.__frame_len))

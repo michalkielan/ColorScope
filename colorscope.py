@@ -108,9 +108,7 @@ def main():
   image_loader = ip.imgloader.create(img_file, pixel_format, video_size)
 
   if dist != '':
-    print ('Dist')
-    ds = ip.colormeter.DistributionHSL(image_loader.imread())
-    ds.show_s_plot()
+    ip.colormeter.distplot(dist, image_loader.get_buf_u())
     sys.exit(0)
 
   try:

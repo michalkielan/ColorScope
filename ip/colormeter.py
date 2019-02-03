@@ -11,8 +11,10 @@ import cv2
 
 import ip.imgloader
 
-def distplot(data):
-  sns.distplot(x);
+def distplot(title, data):
+  sns.distplot(data);
+  plt.title(title)
+  plt.show()
 
 
 class ColorMeter:
