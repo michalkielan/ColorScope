@@ -521,7 +521,7 @@ class TestColorFilter(unittest.TestCase):
 class TestGraph(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
-  
+
   def test_const(self):
     self.assertEqual(ip.graph.Const.get_max_hue(), 179)
     self.assertEqual(ip.graph.Const.get_max_saturation(), 255)
@@ -566,7 +566,7 @@ class TestGraph(unittest.TestCase):
 class TestColorJson(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
-  
+
   def test_json_rgb(self):
     json_filename = 'rgb_json.json'
     jss = ip.colorjson.JsonSerializerRGB(json_filename)
@@ -631,7 +631,7 @@ class TestColorJson(unittest.TestCase):
 class TestColorMeter(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
-  
+
   def test_colormeter(self):
     ref_filename = 'color_meter_tests_ref_json.json'
     ref_jss = ip.colorjson.JsonSerializerHLS(ref_filename)
@@ -707,6 +707,85 @@ class TestColorMeter(unittest.TestCase):
     os.remove(cap_yuv_filename)
     os.remove(ref_hsv_filename)
     os.remove(cap_hsv_filename)
+
+
+class TestRectDrawer(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
+    try:
+      pass
+      self.fake_display = make_fake_display((1280, 720))
+      self.fake_display.start()
+      self.addCleanup(self.fake_display.stop)
+    except IOError:
+      pass
+
+  def test_draw_rect(self):
+    color_background = (20, 20, 20)
+    color_rect = [0, 0, 255]
+    file_name = 'tmp_img.jpg'
+    window = 'tmp_window'
+    img_file = Image.new('RGB', (500, 500), color_background)
+    img_file.save(file_name)
+    img = cv2.imread(file_name)
+    cv2.imshow(window, img)
+    rect_drawer = ip.draw.RectDrawer(window, img, color_rect)
+    rect_drawer.start((10, 10))
+    rect_drawer.end((14, 14))
+
+    self.assertEqual(img[10][10][0], color_rect[0])
+    self.assertEqual(img[10][10][1], color_rect[1])
+    self.assertEqual(img[10][10][2], color_rect[2])
+
+    self.assertEqual(img[14][14][0], color_rect[0])
+    self.assertEqual(img[14][14][1], color_rect[1])
+    self.assertEqual(img[14][14][2], color_rect[2])
+
+    self.assertEqual(img[13][13][0], color_background[0])
+    self.assertEqual(img[13][13][1], color_background[1])
+    self.assertEqual(img[13][13][2], color_background[2])
+
+    rect_drawer.start((20, 20))
+    rect_drawer.end((18, 18))
+
+    self.assertEqual(img[20][20][0], color_rect[0])
+    self.assertEqual(img[20][20][1], color_rect[1])
+    self.assertEqual(img[20][20][2], color_rect[2])
+
+    self.assertEqual(img[18][18][0], color_rect[0])
+    self.assertEqual(img[18][18][1], color_rect[1])
+    self.assertEqual(img[18][18][2], color_rect[2])
+
+    self.assertEqual(img[17][17][0], color_background[0])
+    self.assertEqual(img[17][17][1], color_background[1])
+    self.assertEqual(img[17][17][2], color_background[2])
+
+    rect_drawer.start((30, 30))
+    rect_drawer.end((40, 20))
+
+    self.assertEqual(img[30][30][0], color_rect[0])
+    self.assertEqual(img[30][30][1], color_rect[1])
+    self.assertEqual(img[30][30][2], color_rect[2])
+
+    self.assertEqual(img[20][40][0], color_rect[0])
+    self.assertEqual(img[20][40][1], color_rect[1])
+    self.assertEqual(img[20][40][2], color_rect[2])
+
+    self.assertEqual(img[17][17][0], color_background[0])
+    self.assertEqual(img[17][17][1], color_background[1])
+    self.assertEqual(img[17][17][2], color_background[2])
+
+    rect_drawer.start((160, 160))
+    rect_drawer.end((50, 70))
+
+    self.assertEqual(img[160][160][0], color_rect[0])
+    self.assertEqual(img[160][160][1], color_rect[1])
+    self.assertEqual(img[160][160][2], color_rect[2])
+
+    self.assertEqual(img[70][50][0], color_rect[0])
+    self.assertEqual(img[70][50][1], color_rect[1])
+    self.assertEqual(img[70][50][2], color_rect[2])
+    cv2.destroyAllWindows()
 
 
 class TestColorscope(unittest.TestCase):
