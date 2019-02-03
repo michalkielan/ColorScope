@@ -56,7 +56,7 @@ class Resources:
           'ffmpeg -y \
           -nostats -loglevel 0 \
           -f rawvideo \
-          -video_size 1280x720
+          -video_size 1280x720 \
           -pixel_format nv12 \
           -i /dev/urandom \
           -vframes 1 \
@@ -143,6 +143,7 @@ class ColorReaderHsvMock(ip.colorreader.ColorReaderHSV):
 class ColorReaderHlsMock(ip.colorreader.ColorReaderHLS):
   def read_rect_color(self, pos):
     return super().read_rect_color(pos)
+
 
 
 class TestColorscope(unittest.TestCase):
