@@ -7,9 +7,10 @@ Tool for analyze the image quality
 
 ## Requirements
 * python-opencv
+* matplotlib
 
 ```
-$ sudo pip install opencv-python
+$ sudo pip install opencv-python matplotlib
 ```
 
 ## Usage
