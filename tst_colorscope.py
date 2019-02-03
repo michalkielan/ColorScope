@@ -46,6 +46,14 @@ class FakeMouse:
     self.__mouse.click(x, y)
 
 
+def make_fake_display(size):
+  if fake_xwindow_supported():
+    w, h = size
+    fake_display = Xvfb(width=w, height=h)
+    return fake_display
+  raise IOError('Fake xwindow not supported')
+
+
 class Resources:
   def __init__(self):
     size = (10, 10)
@@ -145,23 +153,111 @@ class ColorReaderHlsMock(ip.colorreader.ColorReaderHLS):
     return super().read_rect_color(pos)
 
 
-
-class TestColorscope(unittest.TestCase):
+class TestImgLoader(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
 
-  def make_fake_display(self, size):
-    if fake_xwindow_supported():
-      w, h = size
-      fake_display = Xvfb(width=w, height=h)
-      return fake_display
-    raise IOError('Fake xwindow not supported')
+  def test_factory_failed(self):
+    with self.assertRaises(AttributeError):
+      img_loader = ip.imgloader.ImageLoader.create(
+          self.res.red,
+          'invalid',
+          (0, 0)
+      )
+      del img_loader
 
-  def test_const(self):
-    self.assertEqual(ip.graph.Const.get_max_hue(), 179)
-    self.assertEqual(ip.graph.Const.get_max_saturation(), 255)
-    self.assertEqual(ip.graph.Const.get_max_lightness(), 255)
-    self.assertEqual(ip.graph.Const.Symbols.delta(), '\u0394')
+
+  def test_factory_nv12(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoader.create(
+          self.res.raw_nv12_1920_1080,
+          'nv12',
+          (1920, 1080)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_factory_nv21(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoader.create(
+          self.res.raw_nv21_1920_1080,
+          'nv21',
+          (1920, 1080)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_factory_default(self):
+    if not is_windows():
+      imloader = ip.imgloader.create(self.res.red)
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([10, 10], [h, w])
+      self.assertEqual(3, channels)
+      del img
+
+  def test_factory_wrong_size(self):
+    if not is_windows():
+      with self.assertRaises(ValueError):
+        imloader = ip.imgloader.ImageLoader.create(
+            self.res.raw_nv21_1920_1080,
+            'nv21',
+            (2000, 2000)
+        )
+        ip.colorreader.ColorReader.create('rgb', imloader, '', '')
+
+  def test_nv12_1080p(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoaderRawNV12(
+          self.res.raw_nv12_1920_1080,
+          (1920, 1080)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_nv12_720p(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoaderRawNV12(
+          self.res.raw_nv12_1280_720,
+          (1280, 720)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([720, 1280], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_nv21_1080p(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoaderRawNV21(
+          self.res.raw_nv21_1920_1080,
+          (1920, 1080)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_nv21_720p(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoaderRawNV21(
+          self.res.raw_nv21_1280_720,
+          (1280, 720)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([720, 1280], [h, w])
+      self.assertEqual(3, channels)
+
+
+class TestColorReader(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
 
   def test_factory_color_read_create(self):
     imloader = ip.imgloader.ImageLoaderDefault(self.res.red)
@@ -188,103 +284,6 @@ class TestColorscope(unittest.TestCase):
     with self.assertRaises(TypeError):
       cr_inv = ip.colorreader.ColorReader(imloader)
       del cr_inv
-
-  def test_img_loader_factory_failed(self):
-    with self.assertRaises(AttributeError):
-      img_loader = ip.imgloader.ImageLoader.create(
-          self.res.red,
-          'invalid',
-          (0, 0)
-      )
-      del img_loader
-
-
-  def test_img_loader_factory_nv12(self):
-    if not is_windows():
-      imloader = ip.imgloader.ImageLoader.create(
-          self.res.raw_nv12_1920_1080,
-          'nv12',
-          (1920, 1080)
-      )
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([1080, 1920], [h, w])
-      self.assertEqual(3, channels)
-
-  def test_img_loader_factory_nv21(self):
-    if not is_windows():
-      imloader = ip.imgloader.ImageLoader.create(
-          self.res.raw_nv21_1920_1080,
-          'nv21',
-          (1920, 1080)
-      )
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([1080, 1920], [h, w])
-      self.assertEqual(3, channels)
-
-  def test_img_loader_factory_default(self):
-    if not is_windows():
-      imloader = ip.imgloader.create(self.res.red)
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([10, 10], [h, w])
-      self.assertEqual(3, channels)
-      del img
-
-  def test_img_loader_factory_wrong_size(self):
-    if not is_windows():
-      with self.assertRaises(ValueError):
-        imloader = ip.imgloader.ImageLoader.create(
-            self.res.raw_nv21_1920_1080,
-            'nv21',
-            (2000, 2000)
-        )
-        ip.colorreader.ColorReader.create('rgb', imloader, '', '')
-
-  def test_img_loader_nv12_1080p(self):
-    if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV12(
-          self.res.raw_nv12_1920_1080,
-          (1920, 1080)
-      )
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([1080, 1920], [h, w])
-      self.assertEqual(3, channels)
-
-  def test_img_loader_nv12_720p(self):
-    if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV12(
-          self.res.raw_nv12_1280_720,
-          (1280, 720)
-      )
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([720, 1280], [h, w])
-      self.assertEqual(3, channels)
-
-  def test_img_loader_nv21_1080p(self):
-    if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV21(
-          self.res.raw_nv21_1920_1080,
-          (1920, 1080)
-      )
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([1080, 1920], [h, w])
-      self.assertEqual(3, channels)
-
-  def test_img_loader_nv21_720p(self):
-    if not is_windows():
-      imloader = ip.imgloader.ImageLoaderRawNV21(
-          self.res.raw_nv21_1280_720,
-          (1280, 720)
-      )
-      img = imloader.imread()
-      h, w, channels = img.shape
-      self.assertEqual([720, 1280], [h, w])
-      self.assertEqual(3, channels)
 
   def test_color_rgb_red(self):
     img_file = self.res.red
@@ -314,18 +313,6 @@ class TestColorscope(unittest.TestCase):
     yuv = crm.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [76, 91, 255])
 
-  def test_color_filter_median_red(self):
-    img_file = self.res.red
-    color_filter = ip.colorfilter.ColorChannelFilterMedian()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [255, 0, 0])
-
-  def test_color_filter_average_red(self):
-    img_file = self.res.red
-    color_filter = ip.colorfilter.ColorChannelFilterAverage()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [255, 0, 0])
-
   def test_color_rgb_green(self):
     img_file = self.res.green
     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
@@ -353,18 +340,6 @@ class TestColorscope(unittest.TestCase):
     crm = ColorReaderYuvMock(img_loader, 'test.json')
     yuv = crm.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [150, 54, 0])
-
-  def test_color_filter_median_green(self):
-    img_file = self.res.green
-    color_filter = ip.colorfilter.ColorChannelFilterMedian()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [0, 255, 0])
-
-  def test_color_filter_average_green(self):
-    img_file = self.res.green
-    color_filter = ip.colorfilter.ColorChannelFilterAverage()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [0, 255, 0])
 
   def test_color_rgb_blue(self):
     img_file = self.res.blue
@@ -394,18 +369,6 @@ class TestColorscope(unittest.TestCase):
     yuv = crm.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [29, 239, 103])
 
-  def test_color_filter_median_blue(self):
-    img_file = self.res.blue
-    color_filter = ip.colorfilter.ColorChannelFilterMedian()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [0, 0, 255])
-
-  def test_color_filter_average_blue(self):
-    img_file = self.res.blue
-    color_filter = ip.colorfilter.ColorChannelFilterAverage()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [0, 0, 255])
-
   def test_color_rgb_black(self):
     img_file = self.res.black
     img_loader = ip.imgloader.ImageLoaderDefault(img_file)
@@ -433,18 +396,6 @@ class TestColorscope(unittest.TestCase):
     crm = ColorReaderYuvMock(img_loader, 'test.json')
     yuv = crm.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [0, 128, 128])
-
-  def test_color_filter_median_black(self):
-    img_file = self.res.black
-    color_filter = ip.colorfilter.ColorChannelFilterMedian()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [0, 0, 0])
-
-  def test_color_filter_average_black(self):
-    img_file = self.res.black
-    color_filter = ip.colorfilter.ColorChannelFilterAverage()
-    r, g, b = color_filter.filter(cv2.imread(img_file))
-    self.assertEqual([b, g, r], [0, 0, 0])
 
   def test_color_rgb_white(self):
     img_file = self.res.white
@@ -474,6 +425,86 @@ class TestColorscope(unittest.TestCase):
     yuv = crm.read_rect_color(self.res.rect)
     self.assertEqual(yuv, [255, 128, 128])
 
+  @staticmethod
+  def close_window():
+    if fake_xwindow_supported():
+      fake_mouse = FakeMouse()
+      fake_keyboard = FakeKeyboard()
+      start_pos = [50, 50]
+      timeout = 3
+      x, y = start_pos
+
+      sleep(timeout)
+      fake_mouse.click(x, y)
+      fake_keyboard.tap_esc()
+
+  def test_gui_open_close(self):
+    try:
+      fake_display = make_fake_display((1280, 720))
+      fake_display.start()
+      closer = threading.Thread(target=self.close_window)
+      closer.start()
+      image_loader = ip.imgloader.ImageLoaderDefault(self.res.red)
+      cr_rgb = ip.colorreader.ColorReaderRGB(image_loader, 'test.json')
+      cr_rgb.processing()
+      closer.join()
+      fake_display.stop()
+    except IOError:
+      pass
+
+
+class TestColorFilter(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
+
+  def test_color_filter_median_red(self):
+    img_file = self.res.red
+    color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [255, 0, 0])
+
+  def test_color_filter_average_red(self):
+    img_file = self.res.red
+    color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [255, 0, 0])
+
+  def test_color_filter_median_green(self):
+    img_file = self.res.green
+    color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [0, 255, 0])
+
+  def test_color_filter_average_green(self):
+    img_file = self.res.green
+    color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [0, 255, 0])
+
+  def test_color_filter_median_blue(self):
+    img_file = self.res.blue
+    color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [0, 0, 255])
+
+  def test_color_filter_average_blue(self):
+    img_file = self.res.blue
+    color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [0, 0, 255])
+
+  def test_color_filter_median_black(self):
+    img_file = self.res.black
+    color_filter = ip.colorfilter.ColorChannelFilterMedian()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [0, 0, 0])
+
+  def test_color_filter_average_black(self):
+    img_file = self.res.black
+    color_filter = ip.colorfilter.ColorChannelFilterAverage()
+    r, g, b = color_filter.filter(cv2.imread(img_file))
+    self.assertEqual([b, g, r], [0, 0, 0])
+
   def test_color_filter_median_white(self):
     img_file = self.res.white
     color_filter = ip.colorfilter.ColorChannelFilterMedian()
@@ -486,6 +517,56 @@ class TestColorscope(unittest.TestCase):
     r, g, b = color_filter.filter(cv2.imread(img_file))
     self.assertEqual([b, g, r], [255, 255, 255])
 
+
+class TestGraph(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
+  
+  def test_const(self):
+    self.assertEqual(ip.graph.Const.get_max_hue(), 179)
+    self.assertEqual(ip.graph.Const.get_max_saturation(), 255)
+    self.assertEqual(ip.graph.Const.get_max_lightness(), 255)
+    self.assertEqual(ip.graph.Const.Symbols.delta(), '\u0394')
+
+  @staticmethod
+  def stop_gui(timeout):
+    sleep(timeout)
+    plt.ioff()
+    plt.close("all")
+
+  def test_gui_plot(self):
+    try:
+      if is_travis():
+        fake_display = make_fake_display((1280, 720))
+        fake_display.start()
+        ref_filename = 'graph_tests_ref_json.json'
+        ref_jss = ip.colorjson.JsonSerializerHLS(ref_filename)
+        ref_jss.append([10, 10, 10])
+        ref_jss.append([10, 10, 10])
+        ref_jss.append([10, 10, 10])
+        ref_jss.write()
+
+        cap_filename = 'graph_tests_cap_json.json'
+        cap_jss = ip.colorjson.JsonSerializerHLS(cap_filename)
+        cap_jss.append([20, 20, 20])
+        cap_jss.append([20, 20, 20])
+        cap_jss.append([20, 20, 20])
+        cap_jss.write()
+
+        timeout = 3
+        closer = threading.Thread(target=self.stop_gui, args=[timeout])
+        closer.start()
+        graph_hs = ip.graph.GraphHS(ref_filename, cap_filename)
+        graph_hs.show()
+        closer.join()
+        fake_display.stop()
+    except IOError:
+      pass
+
+class TestColorJson(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
+  
   def test_json_rgb(self):
     json_filename = 'rgb_json.json'
     jss = ip.colorjson.JsonSerializerRGB(json_filename)
@@ -546,6 +627,11 @@ class TestColorscope(unittest.TestCase):
     self.assertEqual([237, 253, 254], jsd.get()['channels']['s'])
     os.remove(json_filename)
 
+
+class TestColorMeter(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
+  
   def test_colormeter(self):
     ref_filename = 'color_meter_tests_ref_json.json'
     ref_jss = ip.colorjson.JsonSerializerHLS(ref_filename)
@@ -622,67 +708,10 @@ class TestColorscope(unittest.TestCase):
     os.remove(ref_hsv_filename)
     os.remove(cap_hsv_filename)
 
-  @staticmethod
-  def close_window():
-    if fake_xwindow_supported():
-      fake_mouse = FakeMouse()
-      fake_keyboard = FakeKeyboard()
-      start_pos = [50, 50]
-      timeout = 3
-      x, y = start_pos
 
-      sleep(timeout)
-      fake_mouse.click(x, y)
-      fake_keyboard.tap_esc()
-
-  def test_gui_open_close(self):
-    try:
-      fake_display = self.make_fake_display((1280, 720))
-      fake_display.start()
-      closer = threading.Thread(target=self.close_window)
-      closer.start()
-      image_loader = ip.imgloader.ImageLoaderDefault(self.res.red)
-      cr_rgb = ip.colorreader.ColorReaderRGB(image_loader, 'test.json')
-      cr_rgb.processing()
-      closer.join()
-      fake_display.stop()
-    except IOError:
-      pass
-
-  @staticmethod
-  def stop_gui(timeout):
-    sleep(timeout)
-    plt.ioff()
-    plt.close("all")
-
-  def test_gui_plot(self):
-    try:
-      if is_travis():
-        fake_display = self.make_fake_display((1280, 720))
-        fake_display.start()
-        ref_filename = 'graph_tests_ref_json.json'
-        ref_jss = ip.colorjson.JsonSerializerHLS(ref_filename)
-        ref_jss.append([10, 10, 10])
-        ref_jss.append([10, 10, 10])
-        ref_jss.append([10, 10, 10])
-        ref_jss.write()
-
-        cap_filename = 'graph_tests_cap_json.json'
-        cap_jss = ip.colorjson.JsonSerializerHLS(cap_filename)
-        cap_jss.append([20, 20, 20])
-        cap_jss.append([20, 20, 20])
-        cap_jss.append([20, 20, 20])
-        cap_jss.write()
-
-        timeout = 3
-        closer = threading.Thread(target=self.stop_gui, args=[timeout])
-        closer.start()
-        graph_hs = ip.graph.GraphHS(ref_filename, cap_filename)
-        graph_hs.show()
-        closer.join()
-        fake_display.stop()
-    except IOError:
-      pass
+class TestColorscope(unittest.TestCase):
+  def setUp(self):
+    self.res = Resources()
 
   def test_main_function(self):
     exe = ''
