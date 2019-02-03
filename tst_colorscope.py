@@ -713,7 +713,6 @@ class TestRectDrawer(unittest.TestCase):
   def setUp(self):
     self.res = Resources()
     try:
-      pass
       self.fake_display = make_fake_display((1280, 720))
       self.fake_display.start()
       self.addCleanup(self.fake_display.stop)
