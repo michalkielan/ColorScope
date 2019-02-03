@@ -2,30 +2,17 @@
 """Calculate color paramters"""
 
 import numpy as np
-import scipy.stats as stats
 import pylab as plt
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy import stats
 import cv2
 
 import ip.imgloader
 
-
-def dist(data):
-  return stats.norm.pdf(data, np.mean(data), np.std(data))
-
-def plot_dist(data):
-  plt.plot(data, dist(data), '-o')
-  plt.hist(data, normed=True)
-  plt.show()
-
-class DistributionHSL:
-  def __init__(self, img):
-    self.__h = img[0]
-    self.__s = img[1]
-    self.__v = img[2]
-
-  def show_s_plot(self):
-    plot_dist(self.__s)
-
+def distplot(data):
+  sns.distplot(x);
 
 
 class ColorMeter:

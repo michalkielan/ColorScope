@@ -96,7 +96,7 @@ def main():
   if gen_graph_filenames != '':
     ref_json, cap_json = gen_graph_filenames
     try:
-      ip.graph.GraphGenerator.create(ref_json, cap_json)
+      ip.graph.GraphHS.create(ref_json, cap_json)
     except (AttributeError, ValueError) as err:
       err = sys.exc_info()[1]
       sys.exit('Cannot generate graph: ' + str(err))
@@ -111,7 +111,6 @@ def main():
     print ('Dist')
     ds = ip.colormeter.DistributionHSL(image_loader.imread())
     ds.show_s_plot()
-
     sys.exit(0)
 
   try:

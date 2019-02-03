@@ -1,93 +1,86 @@
 #!/usr/bin/env python3
 """Plot generator"""
 
+import abc
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
 import ip.colorjson
 import ip.colormeter
-import matplotlib.pyplot as plt
 
 
 class Const:
-  @staticmethod
-  def ref_color():
-    return (0, 0, 0)
-
-  @staticmethod
-  def cap_color():
-    return (0, 0, 244)
-
   class Symbols:
     @staticmethod
     def delta():
       return '\u0394'
 
-def show_window(window_name):
+  @staticmethod
+  def get_max_hue():
+    return 179
+
+  @staticmethod
+  def get_max_saturation():
+    return 255
+
+  @staticmethod
+  def get_max_lightness():
+    return 255
+
+
+def show_window(window):
   while True:
     pressed_key = cv2.waitKey(100)
     if pressed_key == 27 or pressed_key == ord('q'):
       cv2.destroyAllWindows()
       break
-    if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+    if cv2.getWindowProperty(window, cv2.WND_PROP_VISIBLE) < 1:
       break
   cv2.destroyAllWindows()
 
 
-class Plotter():
-  pass
+class Graph(metaclass=abc.ABCMeta):
+  @abc.abstractmethod
+  def show(self):
+    pass
 
 
-class PlotterHS():
-  pass
+class GraphHS:
+  def __init__(self, ref_json_filename, cap_json_filename):
+    self.__ref_color = ip.colorjson.JsonDeserializer(ref_json_filename)
+    self.__cap_color = ip.colorjson.JsonDeserializer(cap_json_filename)
+    self.__title = 'HS Error graph'
+    self.__xlabel = 'S'
+    self.__ylabel = 'H'
 
-
-class PlotterLum():
-  pass
-
-
-class PlaneHS:
-  def __init__(self, ref_color_data, cap_color_data, scaler):
-    self.__ref_color = ref_color_data
-    self.__cap_color = cap_color_data
-    self.__scaler = scaler
-    self.__plane = self.__generate_hs()
+    if self.__ref_color.get()['format'] != 'hls' or self.__cap_color.get()['format'] != 'hls':
+      raise ValueError('Wrong format, HLS only supported (so far)')
 
   @staticmethod
-  def __generate_hs():
-    max_hue = 180
-    max_sat = 255
-    img = np.zeros((max_hue, max_sat, 3), np.uint8)
+  def __get_max_hue():
+    return Const.get_max_hue()
+
+  @staticmethod
+  def __get_max_saturation():
+    return Const.get_max_saturation()
+
+  @staticmethod
+  def __get_max_lightness():
+    return Const.get_max_lightness()
+
+  def __generate_hs(self):
+    img = np.zeros((self.__get_max_hue(), self.__get_max_saturation(), 3), np.uint8)
     height, width, channels = img.shape
     del channels
     img_hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+    lightness = int(self.__get_max_lightness()/2)
     for y in range(0, height):
       for x in range(0, width):
         s_channel, h_channel = x, y
-        img_hls[y, x] = [h_channel, 128, s_channel]
+        img_hls[y, x] = [h_channel, lightness, s_channel]
     return img_hls
 
-  def get_plot(self):
-     return self.__plane
-
-
-class GraphGenerator:
-  def __init__(self, ref_json_filename, cap_json_filename):
-    self.__ref_color = ip.colorjson.ColorJsonParser(ref_json_filename)
-    self.__cap_color = ip.colorjson.ColorJsonParser(cap_json_filename)
-    if self.__ref_color.get()['format'] != 'hls' or self.__cap_color.get()['format'] != 'hls':
-      raise ValueError('Wrong format, HSL only supported (so far)')
-
-  @staticmethod
-  def __label_x(img, pos, text):
-    ip.draw.Draw.put_text(img, pos, text, 0.3)
-
-  @staticmethod
-  def __label_y(img, pos, text):
-    ip.draw.Draw.put_text(img, pos, text, 0.3)
-
-  def generate_hs(self):
-    window_name = 'HS error graph'
-
+  def __print_stats(self):
     color_meter = ip.colormeter.ColorMeter(self.__ref_color, self.__cap_color)
     h_perc, l_perc, s_perc = color_meter.get_hls_delta_perc()
 
@@ -95,40 +88,42 @@ class GraphGenerator:
     print(Const.Symbols.delta() + 'L [average] : ', round(l_perc, 2), '%', sep='')
     print(Const.Symbols.delta() + 'S [average] : ', round(s_perc, 2), '%', sep='')
 
-    hs_plane = PlaneHS(self.__ref_color, self.__cap_color, 1)
-    img = hs_plane.get_plot()
+  def show(self):
+    self.__print_stats()
+    img = self.__generate_hs()
 
-    img_graph = img
+    plt.ylim((0, self.__get_max_hue() - 1))
+    plt.xlim(0, self.__get_max_saturation() - 1)
+    plt.title(self.__title)
+    plt.xlabel(self.__xlabel)
+    plt.ylabel(self.__ylabel)
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
-    plt.ylim((0, 179))
-    plt.xlim(0, 254)
+    ref_point_color = 'bs-'
+    cap_point_color = 'ro-'
 
-    plt.title('HS error graph')
-    plt.xlabel('Saturation')
-    plt.ylabel('Hue')
+    for i in range(len(self.__ref_color.get()['channels']['h'])):
+      p1_x, p1_y = [
+          self.__ref_color.get()['channels']['s'][i],
+          self.__ref_color.get()['channels']['h'][i]
+      ]
 
-    plt.imshow(cv2.cvtColor(img_graph, cv2.COLOR_BGR2RGB))
-    plt.gca().invert_yaxis()
+      p2_x, p2_y = [
+          self.__cap_color.get()['channels']['s'][i],
+          self.__cap_color.get()['channels']['h'][i]
+      ]
 
-    size = len(self.__ref_color.get()['channels']['h'])
+      plt.plot([p1_x, p2_x], [p1_y, p2_y], color='black', linewidth=0.7)
+      plt.plot([p1_x, p1_x], [p1_y, p1_y], ref_point_color)
+      plt.plot([p2_x, p2_x], [p2_y, p2_y], cap_point_color)
 
-    for i in range(0, size):
-      ref_channels = self.__ref_color.get()['channels']
-      cap_channels = self.__cap_color.get()['channels']
+    ref_legend, = plt.plot([], ref_point_color, label='ref')
+    cap_legend, = plt.plot([], cap_point_color, label='cap')
 
-      ref_x = ref_channels['s'][i]
-      ref_y = ref_channels['h'][i]
-
-      cap_x = cap_channels['s'][i]
-      cap_y = cap_channels['h'][i]
-
-      plt.plot([ref_x, cap_x], [ref_y, cap_y], color='black', linewidth=0.7)
-      plt.plot([ref_x, ref_x], [ref_y, ref_y], 'bs-')
-      plt.plot([cap_x, cap_x], [cap_y, cap_y], 'ro-')
-
+    plt.legend(handles=[ref_legend, cap_legend])
     plt.show()
 
   @staticmethod
   def create(ref_json_filename, cap_json_filename):
-    graph_generator = GraphGenerator(ref_json_filename, cap_json_filename)
-    graph_generator.generate_hs()
+    graph_hs = GraphHS(ref_json_filename, cap_json_filename)
+    graph_hs.show()

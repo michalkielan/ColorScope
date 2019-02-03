@@ -32,10 +32,20 @@ class ImageLoaderDefault(ImageLoader):
 
 class ImageLoaderRawNV21(ImageLoader):
   def __init__(self, filename, size):
+    self.__filename = filename
     width, height = size
     self.__frame_len = width * height * 3 / 2
     self.__img_file = open(filename, 'rb')
     self.__shape = (int(height * 1.5), width)
+
+  def get_y(self):
+    size = self.__height * self.__width
+    buf = np.fromfile(self.__filename, dtype=np.uint8)
+    y_len = size * 12 * 2/3 /8
+#    raw_y[]
+#    for i in range (0, y_len)
+#      raw_y.append(buf[i])
+    return [buf[i] for in range(0, y_len)]
 
   def _read_raw(self):
     raw = self.__img_file.read(int(self.__frame_len))

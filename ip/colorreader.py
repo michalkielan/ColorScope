@@ -77,7 +77,7 @@ class ColorReader(metaclass=abc.ABCMeta):
 class ColorReaderRGB(ColorReader):
   def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
-    self._color_json = ip.colorjson.ColorJsonRGB(json_filename)
+    self._color_json = ip.colorjson.JsonSerializerRGB(json_filename)
     print('R', 'G', 'B', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -87,7 +87,7 @@ class ColorReaderRGB(ColorReader):
 class ColorReaderYUV(ColorReader):
   def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
-    self._color_json = ip.colorjson.ColorJsonYUV(json_filename)
+    self._color_json = ip.colorjson.JsonSerializerYUV(json_filename)
     print('Y', 'U', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -97,7 +97,7 @@ class ColorReaderYUV(ColorReader):
 class ColorReaderHSV(ColorReader):
   def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
-    self._color_json = ip.colorjson.ColorJsonHSV(json_filename)
+    self._color_json = ip.colorjson.JsonSerializerHSV(json_filename)
     print('H', 'S', 'V', sep='\t')
 
   def _get_color_format(self, img_roi):
@@ -107,7 +107,7 @@ class ColorReaderHSV(ColorReader):
 class ColorReaderHLS(ColorReader):
   def __init__(self, filename, json_filename, filter_type='avg'):
     super().__init__(filename, filter_type)
-    self._color_json = ip.colorjson.ColorJsonHLS(json_filename)
+    self._color_json = ip.colorjson.JsonSerializerHLS(json_filename)
     print('H', 'L', 'S', sep='\t')
 
   def _get_color_format(self, img_roi):

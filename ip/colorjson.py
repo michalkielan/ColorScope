@@ -6,7 +6,7 @@ import json
 import abc
 
 
-class ColorJson(metaclass=abc.ABCMeta):
+class JsonSerializer(metaclass=abc.ABCMeta):
   def __init__(self, filename):
     self.__filename = filename
     self._color_data = {}
@@ -25,7 +25,7 @@ class ColorJson(metaclass=abc.ABCMeta):
       json.dump(self._color_data, outfile)
 
 
-class ColorJsonRGB(ColorJson):
+class JsonSerializerRGB(JsonSerializer):
   def __init__(self, filename):
     super().__init__(filename)
     self._color_data = {
@@ -33,7 +33,7 @@ class ColorJsonRGB(ColorJson):
     }
 
 
-class ColorJsonYUV(ColorJson):
+class JsonSerializerYUV(JsonSerializer):
   def __init__(self, filename):
     super().__init__(filename)
     self._color_data = {
@@ -41,7 +41,7 @@ class ColorJsonYUV(ColorJson):
     }
 
 
-class ColorJsonHSV(ColorJson):
+class JsonSerializerHSV(JsonSerializer):
   def __init__(self, filename):
     super().__init__(filename)
     self._color_data = {
@@ -49,7 +49,7 @@ class ColorJsonHSV(ColorJson):
     }
 
 
-class ColorJsonHLS(ColorJson):
+class JsonSerializerHLS(JsonSerializer):
   def __init__(self, filename):
     super().__init__(filename)
     self._color_data = {
@@ -57,7 +57,7 @@ class ColorJsonHLS(ColorJson):
     }
 
 
-class ColorJsonParser:
+class JsonDeserializer:
   def __init__(self, json_filename):
     if not os.path.exists(json_filename):
       raise FileNotFoundError('Json file :' + json_filename + ' not found')
