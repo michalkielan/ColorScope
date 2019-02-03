@@ -73,7 +73,7 @@ class Resources:
           raw_nv21_1280_720.yuv'
       )
       os.system(
-         'ffmpeg -y \
+          'ffmpeg -y \
           -nostats -loglevel 0 \
           -f rawvideo \
           -video_size 1920x1080 \
@@ -196,6 +196,7 @@ class TestColorscope(unittest.TestCase):
           'invalid',
           (0, 0)
       )
+      del img_loader
 
 
   def test_img_loader_factory_nv12(self):
@@ -621,7 +622,8 @@ class TestColorscope(unittest.TestCase):
     os.remove(ref_hsv_filename)
     os.remove(cap_hsv_filename)
 
-  def close_window(self):
+  @staticmethod
+  def close_window():
     if fake_xwindow_supported():
       fake_mouse = FakeMouse()
       fake_keyboard = FakeKeyboard()
@@ -647,7 +649,8 @@ class TestColorscope(unittest.TestCase):
     except IOError:
       pass
 
-  def stop_gui(self, timeout):
+  @staticmethod
+  def stop_gui(timeout):
     sleep(timeout)
     plt.ioff()
     plt.close("all")
