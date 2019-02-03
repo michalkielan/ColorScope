@@ -722,7 +722,7 @@ class TestRectDrawer(unittest.TestCase):
       pass
 
   def test_draw_rect(self):
-    if fake_gui_enabled:
+    if self.fake_gui_enabled:
       color_background = (20, 20, 20)
       color_rect = [0, 0, 255]
       file_name = 'tmp_img.jpg'
