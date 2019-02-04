@@ -19,7 +19,7 @@ install:
 
 script:
   - pylint colorscope.py ip/*
-  - TRAVIS_TEST_ONLY=1 pytest coverage run --source=ip --source=colorscope tst_colorscope.py
+  - TRAVIS_TEST_ONLY=1 coverage run --source=ip --source=colorscope tst_colorscope.py
 
 after_success:
   - coveralls
