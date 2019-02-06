@@ -14,6 +14,7 @@ ChangeLog
  - output json file
  - graphs: HS
  - img factors h,l and s difference in [%]
+ - add i420 to imgloader
 
 ### Changed
  - arg parser

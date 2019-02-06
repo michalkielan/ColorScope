@@ -103,11 +103,24 @@ class Resources:
           raw_nv21_1920_1080.yuv'
       )
 
+      os.system(
+          'ffmpeg -y \
+          -nostats -loglevel 0 \
+          -f rawvideo \
+          -video_size 1920x1080 \
+          -pixel_format yuv420p \
+          -i /dev/urandom \
+          -vframes 1 \
+          raw_i420_1920_1080.yuv'
+      )
+
       self.raw_nv12_1920_1080 = 'raw_nv12_1920_1080.yuv'
       self.raw_nv21_1920_1080 = 'raw_nv21_1920_1080.yuv'
 
       self.raw_nv12_1280_720 = 'raw_nv12_1280_720.yuv'
       self.raw_nv21_1280_720 = 'raw_nv21_1280_720.yuv'
+
+      self.raw_i420_1920_1080 = 'raw_i420_1920_1080.yuv'
 
     self.red = 'red.png'
     self.green = 'green.png'
@@ -190,6 +203,18 @@ class TestImgLoader(unittest.TestCase):
       imloader = ip.imgloader.ImageLoader.create(
           self.res.raw_nv21_1920_1080,
           'nv21',
+          (1920, 1080)
+      )
+      img = imloader.imread()
+      h, w, channels = img.shape
+      self.assertEqual([1080, 1920], [h, w])
+      self.assertEqual(3, channels)
+
+  def test_factory_i420(self):
+    if not is_windows():
+      imloader = ip.imgloader.ImageLoader.create(
+          self.res.raw_i420_1920_1080,
+          'i420',
           (1920, 1080)
       )
       img = imloader.imread()
