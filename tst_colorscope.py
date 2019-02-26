@@ -5,9 +5,12 @@ import sys
 from time import sleep
 import matplotlib.pyplot as plt
 from PIL import Image
+from numpy import inf
 import cv2
 import ip
+
 # pylint: disable=unused-import
+# pylint: disable=too-many-locals
 import colorscope
 
 def fake_xwindow_supported():
@@ -839,7 +842,7 @@ class TestColorscope(unittest.TestCase):
     if is_windows():
       exe = '%PYTHON%\\python.exe '
     else:
-      exe = 'python '
+      exe = 'python3 '
     self.assertEqual(0, os.system(exe + ' colorscope.py -h'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py -i invalid.png'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py -i red.png -out_fmt=invalid'))
@@ -850,7 +853,98 @@ class TestColorscope(unittest.TestCase):
     self.assertNotEqual(0, os.system(exe + ' colorscope.py --imgfile \
         red.png --output_format=invalid'))
     self.assertNotEqual(0, os.system(exe + ' colorscope.py --imgfile '))
+    self.assertEqual(0,os.system(exe + ' colorscope.py -cp ssim  res/test_img/lena.png res/test_img/lena50.jpg'))
+    self.assertEqual(0,os.system(exe + ' colorscope.py -scp ssim 0 res/test_img/lena.png res/test_img/lena50.jpg '))
+    self.assertEqual(0,os.system(exe + ' colorscope.py -cp psnr res/test_img/lena.png res/test_img/lena50.jpg'))
+    self.assertEqual(0,os.system(exe + ' colorscope.py -scp psnr 0 res/test_img/lena.png  res/test_img/lena50.jpg'))
 
+class TestQualitymeasures(unittest.TestCase):
+  img_res_id = 'res/test_img/'
+  dir_ref_lena = os.path.join(img_res_id, 'lena.png')
+  dir_cap_lena15 = os.path.join(img_res_id, 'lena15.jpg')
+  dir_cap_lena50 = os.path.join(img_res_id, 'lena50.jpg')
+  dir_cap_lena90 = os.path.join(img_res_id, 'lena90.jpg')
+
+  def setUp(self):
+    pass
+
+  def test_pstnr_multichannel_rgb_same(self):
+    image_loader_ref = ip.imgloader.create(self.dir_ref_lena)
+    psnr1 = ip.qualitymeasurement.QualityMeasurement\
+            .create(image_loader_ref, image_loader_ref, 'psnr').process()
+    self.assertEqual(psnr1, inf, 'psnr =  {}'.format(psnr1))
+
+  def test_pstnr_multichannel_rgb(self):
+    image_loader_ref = ip.imgloader.create(self.dir_ref_lena)
+    image_loader_cap15 = ip.imgloader.create(self.dir_cap_lena15)
+    image_loader_cap50 = ip.imgloader.create(self.dir_cap_lena50)
+    image_loader_cap90 = ip.imgloader.create(self.dir_cap_lena90)
+
+    psnr15 = ip.qualitymeasurement.QualityMeasurement\
+             .create(image_loader_ref, image_loader_cap15, 'psnr').process()
+    psnr50 = ip.qualitymeasurement.QualityMeasurement\
+             .create(image_loader_ref, image_loader_cap50, 'psnr').process()
+    psnr90 = ip.qualitymeasurement.QualityMeasurement\
+             .create(image_loader_ref, image_loader_cap90, 'psnr').process()
+
+    self.assertAlmostEqual(psnr15, 28.7767, delta=0.2)
+    self.assertAlmostEqual(psnr50, 31.8558, delta=0.2)
+    self.assertAlmostEqual(psnr90, 36.1004, delta=0.2)
+
+
+  def test_ssim_multichannel_rgb(self):
+    image_loader_ref = ip.imgloader.create(self.dir_ref_lena)
+    image_loader_cap15 = ip.imgloader.create(self.dir_cap_lena15)
+    image_loader_cap50 = ip.imgloader.create(self.dir_cap_lena50)
+    image_loader_cap90 = ip.imgloader.create(self.dir_cap_lena90)
+
+    ssim15 = ip.qualitymeasurement.QualityMeasurement\
+            .create(image_loader_ref, image_loader_cap15, 'ssim').process()
+    ssim50 = ip.qualitymeasurement.QualityMeasurement\
+            .create(image_loader_ref, image_loader_cap50, 'ssim').process()
+    ssim90 = ip.qualitymeasurement.QualityMeasurement\
+            .create(image_loader_ref, image_loader_cap90, 'ssim').process()
+
+    self.assertAlmostEqual(ssim15, 0.764, delta=0.01)
+    self.assertAlmostEqual(ssim50, 0.8353, delta=0.01)
+    self.assertAlmostEqual(ssim90, 0.9045, delta=0.01)
+
+
+  def test_ssim_singlechannel_rgb(self):
+    image_loader_ref = ip.imgloader.create(self.dir_ref_lena)
+    image_loader_cap50 = ip.imgloader.create(self.dir_cap_lena50)
+
+    ssim50_blue = ip.qualitymeasurement.QualityMeasurement\
+                  .create(image_loader_ref, image_loader_cap50, 'ssim-sc')\
+                  .process(ip.qualitymeasurement.ChannelsRGB.blue)
+    ssim50_green = ip.qualitymeasurement.QualityMeasurement\
+                   .create(image_loader_ref, image_loader_cap50, 'ssim-sc')\
+                   .process(ip.qualitymeasurement.ChannelsRGB.green)
+    ssim50_red = ip.qualitymeasurement.QualityMeasurement\
+                 .create(image_loader_ref, image_loader_cap50, 'ssim-sc')\
+                 .process(ip.qualitymeasurement.ChannelsRGB.red)
+
+    self.assertAlmostEqual(ssim50_blue, 0.7538, delta=0.02)
+    self.assertAlmostEqual(ssim50_green, 0.8768, delta=0.02)
+    self.assertAlmostEqual(ssim50_red, 0.8754, delta=0.02)
+
+  def test_psnr_singlechannel_rgb(self):
+    image_loader_ref = ip.imgloader.create(self.dir_ref_lena)
+    image_loader_cap15 = ip.imgloader.create(self.dir_cap_lena15)
+
+    psnr15_blue = ip.qualitymeasurement.QualityMeasurement\
+                  .create(image_loader_ref, image_loader_cap15, 'psnr-sc')\
+                  .process(ip.qualitymeasurement.ChannelsRGB.blue)
+    psnr15_green = ip.qualitymeasurement.QualityMeasurement\
+                   .create(image_loader_ref, image_loader_cap15, 'psnr-sc')\
+                   .process(ip.qualitymeasurement.ChannelsRGB.green)
+    psnr15_red = ip.qualitymeasurement.QualityMeasurement\
+                 .create(image_loader_ref, image_loader_cap15, 'psnr-sc')\
+                 .process(ip.qualitymeasurement.ChannelsRGB.red)
+
+    self.assertAlmostEqual(psnr15_blue, 27.2892, delta=0.25)
+    self.assertAlmostEqual(psnr15_green, 30.074, delta=0.1)
+    self.assertAlmostEqual(psnr15_red, 29.4835, delta=0.25)
 
 if __name__ == '__main__':
   unittest.main()
