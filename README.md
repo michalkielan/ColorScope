@@ -61,14 +61,14 @@ $ ./colorscope.py -scp metrics channel_number reference_image_dir ref__pxl_forma
 ```
 Channel should be given accordingly to openCV color representation:
 For BGR (typical way openCV stores RGB)
-*blue 0
-*green 1
-*red 2
+* blue 0
+* green 1
+* red 2
 
 For YUV:
-*Y 0
-*U 1
-*V 2
+* Y 0
+* U 1
+* V 2
 
 Single channel examples
 ```
