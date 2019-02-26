@@ -37,7 +37,7 @@ $ ./colorscope.py -i capture.jpeg -out_fmt=hls -o cap.json
 $ ./colorscope.py -gen ref.json cap.json
 ```
 
-#Quality metrics
+# Quality metrics
 Compare of two images quality using PSNR and SSIM metric for multichannel  
 ```
 $ ./colorscope.py -cp metrics reference_image_dir ref_pixel_format ref_video_size capture_image_dir cap_pixel_format cap_video_size
