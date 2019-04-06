@@ -41,8 +41,16 @@ class ColorArgumentParser:
 
     video_size_ref = self.parse_video_size_arg(ref_vd_sz)
     video_size_cap = self.parse_video_size_arg(cap_vd_sz)
-    img_load_ref = ip.imgloader.create(ref_img_dir, ref_pxl_fmt, video_size_ref)
-    img_load_cap = ip.imgloader.create(cap_img_dir, cap_pxl_fmt, video_size_cap)
+    img_load_ref = ip.imgloader.create(
+        ref_img_dir,
+        ref_pxl_fmt,
+        video_size_ref
+    )
+    img_load_cap = ip.imgloader.create(
+        cap_img_dir,
+        cap_pxl_fmt,
+        video_size_cap
+    )
 
     if not self.is_metric_name_correct(metric):
       return (False, 0.0)
