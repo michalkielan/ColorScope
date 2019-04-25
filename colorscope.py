@@ -182,12 +182,12 @@ def main():
     sys.exit('File not found')
 
 
-  image_loader = ip.imgloader.create(img_file, pixel_format, video_size)
+  img_loader = ip.imgloader.create(img_file, pixel_format, video_size)
 
   try:
     color_reader = ip.colorreader.create(
         output_format,
-        image_loader,
+        img_loader,
         filter_type,
         out_json_file
     )

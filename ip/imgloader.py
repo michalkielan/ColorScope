@@ -23,6 +23,7 @@ class ImageLoader(metaclass=abc.ABCMeta):
       return ImageLoaderDefault(img_filename)
     raise AttributeError('image_loader_factory: ' + pixel_format + ' not found')
 
+  @abc.abstractmethod
   def get_native_channels(self):
     pass
 
@@ -57,7 +58,7 @@ class ImageLoaderRawNV21(ImageLoader):
 
   def get_native_channels(self):
     bgr_converted_yuv = self.imread()
-    return  cv2.cvtColor(bgr_converted_yuv, cv2.COLOR_BGR2YUV)
+    return cv2.cvtColor(bgr_converted_yuv, cv2.COLOR_BGR2YUV)
 
 
 class ImageLoaderRawNV12(ImageLoaderRawNV21):
@@ -67,7 +68,7 @@ class ImageLoaderRawNV12(ImageLoaderRawNV21):
 
   def get_native_channels(self):
     bgr_converted_yuv = self.imread()
-    return  cv2.cvtColor(bgr_converted_yuv, cv2.COLOR_BGR2YUV)
+    return cv2.cvtColor(bgr_converted_yuv, cv2.COLOR_BGR2YUV)
 
 class ImageLoaderRawI420(ImageLoaderRawNV21):
   def imread(self):
