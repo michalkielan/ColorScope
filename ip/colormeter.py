@@ -3,6 +3,8 @@
 
 import numpy as np
 
+def plot_dist(img):
+  pass
 
 class ColorMeter:
   def __init__(self, ref_color, cap_color):
