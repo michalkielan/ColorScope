@@ -66,9 +66,6 @@ class ImageLoaderRawNV12(ImageLoaderRawNV21):
     raw_img = self._read_raw()
     return cv2.cvtColor(raw_img, cv2.COLOR_YUV2BGR_NV12)
 
-  def get_native_channels(self):
-    bgr_converted_yuv = self.imread()
-    return cv2.cvtColor(bgr_converted_yuv, cv2.COLOR_BGR2YUV)
 
 class ImageLoaderRawI420(ImageLoaderRawNV21):
   def imread(self):
