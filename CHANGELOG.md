@@ -1,6 +1,9 @@
 ChangeLog
 ==========
 
+v0.1.0 - 2019-04-25
+-------------------
+
 ### Added
  - show rgb values of pixel
  - yuv support
