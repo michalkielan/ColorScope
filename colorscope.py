@@ -4,8 +4,6 @@
 import argparse
 import sys
 import os
-import numpy as np
-import matplotlib.pyplot as plt
 import ip.imgloader
 import ip.colorjson
 import ip.colorreader
