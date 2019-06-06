@@ -38,10 +38,6 @@ class ImageLoaderDefault(ImageLoader):
   def get_native_channels(self):
     return self.imread()
   
-  def get_y(self):
-    yuv = self.get_native_channels()
-    return yuv[:, ;, 0]
-
 
 class ImageLoaderRawNV21(ImageLoader):
   def __init__(self, filename, size):
@@ -63,11 +59,6 @@ class ImageLoaderRawNV21(ImageLoader):
   def get_native_channels(self):
     bgr_converted_yuv = self.imread()
     return cv2.cvtColor(bgr_converted_yuv, cv2.COLOR_BGR2YUV)
-
-  def get_y(self):
-    yuv = self.get_native_channels()
-    return yuv[:, ;, 0]
-
 
 class ImageLoaderRawNV12(ImageLoaderRawNV21):
   def imread(self):

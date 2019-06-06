@@ -4,6 +4,8 @@
 import argparse
 import sys
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 import ip.imgloader
 import ip.colorjson
 import ip.colorreader
@@ -142,11 +144,11 @@ def main():
   )
 
   parser.add_argument(
-      '-dist',
-      '--distribution',
+      '-hist',
+      '--histogram',
       type=str,
       nargs='+',
-      help='calculate distribution'
+      help='plot histogram'
   )
 
   args = parser.parse_args()
@@ -161,11 +163,11 @@ def main():
   compare_multichannel = args.compare
   compare_singlechannel = args.compare_singlechannel
 
-  if distribution:
-    img_file = args.distribution
+  if args.histogram:
+    img_file = args.histogram[0]
     img_loader = ip.imgloader.create(img_file, pixel_format, video_size)
     img = img_loader.imread()
-    ip.colormeter.plot_dist(img)
+    ip.colormeter.plot_hist(img)
     sys.exit(0);
 
   #colorscope -compare metrics [channelId] refImageDir [ref_pixel_format] \
