@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot_hist(img):
   hist, bins = np.histogram(img.flatten(), 256,[0, 256])
   cdf = hist.cumsum()
