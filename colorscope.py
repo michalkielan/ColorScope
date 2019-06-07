@@ -166,7 +166,7 @@ def main():
     img_loader = ip.imgloader.create(img_file, pixel_format, video_size)
     img = img_loader.imread()
     ip.colormeter.plot_hist(img)
-    sys.exit(0);
+    sys.exit(0)
 
   #colorscope -compare metrics [channelId] refImageDir [ref_pixel_format] \
   #[ref_video_size] capImageDir [cap_pixel_format] [cap_video_size]
