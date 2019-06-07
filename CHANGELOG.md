@@ -1,6 +1,9 @@
 ChangeLog
 ==========
 
+### Added
+  - histogram
+
 v0.1.0 - 2019-04-25
 -------------------
 
@@ -19,7 +22,6 @@ v0.1.0 - 2019-04-25
  - img factors h,l and s difference in [%]
  - added image compare metrics SSIM and PSNR
  - add i420 to imgloader
- - histogram
 
 ### Changed
  - arg parser
