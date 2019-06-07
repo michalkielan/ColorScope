@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def plot_hist(img):
-  plt.hist(img.flatten(), 256, [0, 255], color = 'r')
+  plt.hist(img.flatten(), 256, [0, 256], color='r')
   plt.xlim([0, 256])
   plt.title('Histogram')
   plt.xlabel('Color value')
